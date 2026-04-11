@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reflexionsfaktor – Interaktive Simulation</title>
+  <link rel="stylesheet" href="uni-style.css" />
+  <style>
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .top-illustration {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .top-title {
+      margin: 0 0 12px;
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .station-row {
+      display: grid;
+      grid-template-columns: 220px 1fr 220px;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .station {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .station h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      color: var(--primary);
+    }
+
+    .station .small {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .station .big {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .line-zone {
+      position: relative;
+      height: 240px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    #waveCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .wave-overlay-label {
+      position: absolute;
+      left: 18px;
+      top: 14px;
+      color: var(--muted);
+      font-size: 14px;
+      z-index: 2;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+    }
+
+    .wave-overlay-info {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      z-index: 2;
+    }
+
+    .pill {
+      background: rgba(255,255,255,0.96);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+    }
+
+    .canvas-box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    canvas.main-canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .stats-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 82px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+    }
+
+    .stat .value {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .explain {
+      margin-top: 14px;
+      color: var(--text);
+      line-height: 1.65;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .ok {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .warn {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    @media (max-width: 1100px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .station-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .controls-grid {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .controls-grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-top">
+        <h1>Reflexionsfaktor – Interaktive Simulation</h1>
+        <p>
+          Visualisierung von Reflexionsfaktor, Leistungsübertragung und Fehlanpassung
+          einer Leitung mit Lastimpedanz in komplexer Darstellung.
+        </p>
+      </div>
+
+      <div class="header-meta">
+        <div class="meta-box">
+          <div class="label">Themengebiet</div>
+          <div class="value">Leitungstheorie / Anpassung</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Lernziel</div>
+          <div class="value">Zusammenhang zwischen Lastimpedanz, Γ und Leistung verstehen</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Formel</div>
+          <div class="value">Γ = (Z<sub>L</sub> - Z<sub>0</sub>) / (Z<sub>L</sub> + Z<sub>0</sub>)</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Interaktion</div>
+          <div class="value">Preset, Z₀, R und X frei einstellbar</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="card" style="margin-bottom: 18px;">
+      <h2>Eingabe und Steuerung</h2>
+      <div class="controls-grid">
+        <div class="field">
+          <label for="mode">Fall</label>
+          <select id="mode">
+            <option value="match">Match</option>
+            <option value="open">Open</option>
+            <option value="short">Short</option>
+            <option value="example">Beispiel 50 + j100 Ω</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="z0">Z₀ [Ω]</label>
+          <input id="z0" type="number" value="50" step="1" min="0.001" />
+        </div>
+
+        <div class="field">
+          <label for="zr">R [Ω]</label>
+          <input id="zr" type="number" value="50" step="1" />
+        </div>
+
+        <div class="field">
+          <label for="zx">X [Ω]</label>
+          <input id="zx" type="number" value="0" step="1" />
+        </div>
+
+        <div class="field">
+          <label for="normR">r = R/Z₀</label>
+          <input id="normR" type="text" value="1.000" readonly />
+        </div>
+
+        <div class="field">
+          <label for="normX">x = X/Z₀</label>
+          <input id="normX" type="text" value="0.000" readonly />
+        </div>
+      </div>
+
+      <div class="small-note" style="margin-top: 12px;">
+        Für <strong>Z<sub>L</sub> = 50 + j100 Ω</strong> und <strong>Z<sub>0</sub> = 50 Ω</strong>
+        ergibt sich <strong>Γ = 0.5 + j0.5</strong> und <strong>|Γ| ≈ 0.707</strong>.
+      </div>
+    </section>
+
+    <section class="top-illustration">
+      <h2 class="top-title">Sender – Leitung – Last mit Sinuswelle</h2>
+
+      <div class="station-row">
+        <div class="station">
+          <div>
+            <h3>Sender</h3>
+            <div class="small">Quelle / Einspeisung</div>
+          </div>
+          <div class="big" id="senderImpedance">Z₀ = 50 Ω</div>
+          <div class="small" id="senderPower">eingespeist: 100.0%</div>
+        </div>
+
+        <div class="line-zone">
+          <div class="wave-overlay-label" id="lineLabel">Leitung / Kabel</div>
+          <canvas id="waveCanvas" width="760" height="240"></canvas>
+
+          <div class="wave-overlay-info">
+            <div class="pill" id="pillForward">Hinwelle: 100.0%</div>
+            <div class="pill" id="pillReflected">Rückwelle: 0.0%</div>
+            <div class="pill" id="pillDelivered">an Last übertragen: 100.0%</div>
+          </div>
+        </div>
+
+        <div class="station">
+          <div>
+            <h3>Receiver / Last</h3>
+            <div class="small">Abschluss / Empfänger</div>
+          </div>
+          <div class="big" id="receiverImpedance">ZL = 50 + j0 Ω</div>
+          <div class="small" id="receiverPower">Pübertragen: 100.0%</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="canvas-box">
+        <h2>Komplexes Reflexionsdiagramm</h2>
+        <canvas class="main-canvas" id="canvas" width="980" height="640"></canvas>
+
+        <div class="legend">
+          <span><i class="dot" style="background: #4a90e2"></i> Einheitskreis |Γ| = 1</span>
+          <span><i class="dot" style="background: #7a1f1f"></i> Reflexionsfaktor Γ</span>
+          <span><i class="dot" style="background: #1f7a4c"></i> Gesendet</span>
+          <span><i class="dot" style="background: #b42318"></i> Reflektiert</span>
+          <span><i class="dot" style="background: #c28400"></i> Übertragen</span>
+        </div>
+      </div>
+
+      <div class="stats-card">
+        <h2>Kenngrößen</h2>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">Z<sub>L</sub></div>
+            <div class="value" id="zlText">50 + j0 Ω</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">Normiert z</div>
+            <div class="value" id="zNormText">1.000 + j0.000</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">Γ (komplex)</div>
+            <div class="value" id="gammaComplex">0.000 + j0.000</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">|Γ|</div>
+            <div class="value" id="gammaMag">0.000</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">Reflektierte Leistung |Γ|²</div>
+            <div class="value" id="pref">0.0%</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">Übertragene Leistung</div>
+            <div class="value" id="ptrans">100.0%</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">Amplitude reflektiert</div>
+            <div class="value" id="aref">0.0%</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">Demo-Amplitude übertragen</div>
+            <div class="value" id="atrans">100.0%</div>
+          </div>
+        </div>
+
+        <div class="explain" id="description"></div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      Diese Seite verwendet die gemeinsame Datei <strong>uni-style.css</strong> und ergänzt nur reflexionsspezifische Layoutregeln.
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const waveCanvas = document.getElementById("waveCanvas");
+    const wctx = waveCanvas.getContext("2d");
+
+    const modeEl = document.getElementById("mode");
+    const z0El = document.getElementById("z0");
+    const zrEl = document.getElementById("zr");
+    const zxEl = document.getElementById("zx");
+
+    const normREl = document.getElementById("normR");
+    const normXEl = document.getElementById("normX");
+
+    const zlTextEl = document.getElementById("zlText");
+    const zNormTextEl = document.getElementById("zNormText");
+    const gammaComplexEl = document.getElementById("gammaComplex");
+    const gammaMagEl = document.getElementById("gammaMag");
+    const prefEl = document.getElementById("pref");
+    const ptransEl = document.getElementById("ptrans");
+    const arefEl = document.getElementById("aref");
+    const atransEl = document.getElementById("atrans");
+    const descriptionEl = document.getElementById("description");
+
+    const senderImpedanceEl = document.getElementById("senderImpedance");
+    const senderPowerEl = document.getElementById("senderPower");
+    const receiverImpedanceEl = document.getElementById("receiverImpedance");
+    const receiverPowerEl = document.getElementById("receiverPower");
+    const pillForwardEl = document.getElementById("pillForward");
+    const pillReflectedEl = document.getElementById("pillReflected");
+    const pillDeliveredEl = document.getElementById("pillDelivered");
+    const lineLabelEl = document.getElementById("lineLabel");
+
+    let t = 0;
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function fmtComplex(re, im, digits = 3) {
+      const reVal = Math.abs(re) < 1e-12 ? 0 : re;
+      const imVal = Math.abs(im) < 1e-12 ? 0 : im;
+      const sign = imVal >= 0 ? "+" : "-";
+      return `${reVal.toFixed(digits)} ${sign} j${Math.abs(imVal).toFixed(digits)}`;
+    }
+
+    function fmtImpedance(re, im, digits = 0) {
+      const sign = im >= 0 ? "+" : "-";
+      return `${re.toFixed(digits)} ${sign} j${Math.abs(im).toFixed(digits)} Ω`;
+    }
+
+    function complexDiv(a, b) {
+      const den = b.re * b.re + b.im * b.im;
+      if (den === 0) return { re: 0, im: 0 };
+      return {
+        re: (a.re * b.re + a.im * b.im) / den,
+        im: (a.im * b.re - a.re * b.im) / den
+      };
+    }
+
+    function reflectionCoefficient(ZL, Z0, mode) {
+      if (mode === "open") return { re: 1, im: 0 };
+      if (mode === "short") return { re: -1, im: 0 };
+
+      const numerator = { re: ZL.re - Z0, im: ZL.im };
+      const denominator = { re: ZL.re + Z0, im: ZL.im };
+      return complexDiv(numerator, denominator);
+    }
+
+    function setPreset() {
+      const mode = modeEl.value;
+      if (mode === "match") {
+        zrEl.value = z0El.value;
+        zxEl.value = 0;
+      } else if (mode === "open") {
+        zrEl.value = 999999;
+        zxEl.value = 0;
+      } else if (mode === "short") {
+        zrEl.value = 0;
+        zxEl.value = 0;
+      } else if (mode === "example") {
+        z0El.value = 50;
+        zrEl.value = 50;
+        zxEl.value = 100;
+      }
+    }
+
+    function updateNumericInfo(ZL, Z0, gamma, mode) {
+      const zNormRe = ZL.re / Z0;
+      const zNormIm = ZL.im / Z0;
+      const mag = Math.sqrt(gamma.re * gamma.re + gamma.im * gamma.im);
+      const pref = clamp(mag * mag, 0, 1);
+      const ptrans = clamp(1 - pref, 0, 1);
+      const aref = clamp(mag, 0, 1);
+      const atransDemo = clamp(1 - mag, 0, 1);
+
+      normREl.value = zNormRe.toFixed(3);
+      normXEl.value = zNormIm.toFixed(3);
+
+      zlTextEl.textContent = fmtImpedance(ZL.re, ZL.im, 0);
+      zNormTextEl.textContent = fmtComplex(zNormRe, zNormIm, 3);
+      gammaComplexEl.textContent = fmtComplex(gamma.re, gamma.im, 3);
+      gammaMagEl.textContent = mag.toFixed(3);
+      prefEl.textContent = (pref * 100).toFixed(1) + "%";
+      ptransEl.textContent = (ptrans * 100).toFixed(1) + "%";
+      arefEl.textContent = (aref * 100).toFixed(1) + "%";
+      atransEl.textContent = (atransDemo * 100).toFixed(1) + "%";
+
+      senderImpedanceEl.textContent = `Z₀ = ${Z0.toFixed(0)} Ω`;
+      senderPowerEl.textContent = `eingespeist: 100.0%`;
+      receiverImpedanceEl.textContent = `ZL = ${fmtImpedance(ZL.re, ZL.im, 0)}`;
+      receiverPowerEl.textContent = `Pübertragen: ${(ptrans * 100).toFixed(1)}%`;
+
+      pillForwardEl.textContent = `Hinwelle: 100.0%`;
+      pillReflectedEl.textContent = `Rückwelle: ${(pref * 100).toFixed(1)}%`;
+      pillDeliveredEl.textContent = `an Last übertragen: ${(ptrans * 100).toFixed(1)}%`;
+      lineLabelEl.textContent = `Leitung / Kabel, Z₀ = ${Z0.toFixed(0)} Ω`;
+
+      let text = "";
+      if (mode === "match") {
+        text = `<span class="ok">Match:</span> Z<sub>L</sub> = Z<sub>0</sub> ⇒ Γ = 0. Keine Reflexion, gesamte Leistung wird übertragen.`;
+      } else if (mode === "open") {
+        text = `<span class="ok">Open:</span> Z<sub>L</sub> → ∞ ⇒ Γ = +1. Vollständige Reflexion ohne Phasendrehung.`;
+      } else if (mode === "short") {
+        text = `<span class="ok">Short:</span> Z<sub>L</sub> = 0 ⇒ Γ = -1. Vollständige Reflexion mit 180° Phasensprung.`;
+      } else if (mode === "example") {
+        text = `<span class="ok">Beispiel korrekt gerechnet:</span><br>Z<sub>L</sub> = 50 + j100 Ω, Z<sub>0</sub> = 50 Ω<br>z = 1 + j2<br>Γ = 0.5 + j0.5<br>|Γ| = √0.5 ≈ 0.707`;
+      } else {
+        text = `<span class="warn">Custom:</span> Oben zeigt die Leitung die Hin- und Rückwelle, unten die Lage von Γ in der komplexen Ebene.`;
+      }
+      descriptionEl.innerHTML = text;
+
+      return { mag, pref, ptrans, aref, atransDemo };
+    }
+
+    function drawComplexGrid(cx, cy, R) {
+      const majorColor = "#d7dde7";
+      const minorColor = "rgba(215,221,231,0.55)";
+      const axisColor = "#6b7a90";
+      const circleColor = "#4a90e2";
+
+      ctx.save();
+
+      for (let value = -1; value <= 1.0001; value += 0.1) {
+        const rounded = Math.round(value * 10) / 10;
+        const x = cx + rounded * R;
+        const y = cy - rounded * R;
+        const isAxis = Math.abs(rounded) < 1e-9;
+        const isMajor = Math.abs((rounded * 10) % 5) < 1e-9;
+
+        ctx.beginPath();
+        ctx.moveTo(x, cy - R);
+        ctx.lineTo(x, cy + R);
+        ctx.strokeStyle = isAxis ? axisColor : (isMajor ? majorColor : minorColor);
+        ctx.lineWidth = isAxis ? 1.8 : (isMajor ? 1.1 : 0.7);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(cx - R, y);
+        ctx.lineTo(cx + R, y);
+        ctx.strokeStyle = isAxis ? axisColor : (isMajor ? majorColor : minorColor);
+        ctx.lineWidth = isAxis ? 1.8 : (isMajor ? 1.1 : 0.7);
+        ctx.stroke();
+      }
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.strokeStyle = circleColor;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+
+      ctx.fillStyle = "#5f6b7a";
+      ctx.font = "11px Arial";
+
+      for (let value = -1; value <= 1.0001; value += 0.1) {
+        const rounded = Math.round(value * 10) / 10;
+        if (Math.abs(rounded) < 1e-9) continue;
+
+        const x = cx + rounded * R;
+        const y = cy - rounded * R;
+        const label = rounded.toFixed(1);
+
+        ctx.textAlign = "center";
+        ctx.fillText(label, x, cy + 16);
+
+        ctx.textAlign = "right";
+        ctx.fillText(label, cx - 8, y + 4);
+      }
+
+      ctx.textAlign = "left";
+      ctx.font = "14px Arial";
+      ctx.fillText("Re{Γ}", cx + R + 22, cy + 5);
+      ctx.fillText("Im{Γ}", cx - 18, cy - R - 18);
+
+      ctx.fillStyle = "#1f2937";
+      ctx.fillText("Komplexes Reflexionsdiagramm", cx - 95, cy - R - 38);
+
+      ctx.restore();
+    }
+
+    function drawArrow(x1, y1, x2, y2, color) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const angle = Math.atan2(dy, dx);
+      const headLen = 12;
+
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(
+        x2 - headLen * Math.cos(angle - Math.PI / 6),
+        y2 - headLen * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        x2 - headLen * Math.cos(angle + Math.PI / 6),
+        y2 - headLen * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawBarGroup(x, y, width, height, label, value, color, valueText) {
+      const v = clamp(value, 0, 1);
+
+      ctx.save();
+      ctx.fillStyle = "#1f2937";
+      ctx.font = "15px Arial";
+      ctx.textAlign = "left";
+      ctx.fillText(label, x, y - 10);
+
+      ctx.strokeStyle = "#c7d4e4";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x, y, width, height);
+
+      for (let i = 0; i <= 10; i++) {
+        const gx = x + (i / 10) * width;
+        ctx.beginPath();
+        ctx.moveTo(gx, y);
+        ctx.lineTo(gx, y + height);
+        ctx.strokeStyle = i === 0 || i === 10 ? "#c7d4e4" : "rgba(199,212,228,0.45)";
+        ctx.lineWidth = i % 5 === 0 ? 1 : 0.7;
+        ctx.stroke();
+
+        ctx.fillStyle = "#5f6b7a";
+        ctx.font = "11px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText((i / 10).toFixed(1), gx, y + height + 16);
+      }
+
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, width * v, height);
+
+      ctx.fillStyle = "rgba(255,255,255,0.15)";
+      ctx.fillRect(x, y, width * v, height / 2);
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, width * v, height);
+
+      ctx.fillStyle = "#1f2937";
+      ctx.font = "bold 14px Arial";
+      ctx.textAlign = "right";
+      ctx.fillText(valueText, x + width, y - 10);
+      ctx.restore();
+    }
+
+    function readInputs() {
+      const mode = modeEl.value;
+      const Z0 = Math.max(0.001, parseFloat(z0El.value) || 50);
+
+      let ZL = {
+        re: parseFloat(zrEl.value) || 0,
+        im: parseFloat(zxEl.value) || 0
+      };
+
+      if (mode === "match") ZL = { re: Z0, im: 0 };
+      else if (mode === "open") ZL = { re: 1e12, im: 0 };
+      else if (mode === "short") ZL = { re: 0, im: 0 };
+      else if (mode === "example") ZL = { re: 50, im: 100 };
+
+      return { mode, Z0, ZL };
+    }
+
+    function drawWaveIllustration(pref, ptrans) {
+      const w = waveCanvas.width;
+      const h = waveCanvas.height;
+      const mid = h * 0.52;
+      const left = 40;
+      const right = w - 40;
+      const length = right - left;
+
+      wctx.clearRect(0, 0, w, h);
+
+      wctx.strokeStyle = "#c7d4e4";
+      wctx.lineWidth = 10;
+      wctx.lineCap = "round";
+      wctx.beginPath();
+      wctx.moveTo(left, mid);
+      wctx.lineTo(right, mid);
+      wctx.stroke();
+
+      wctx.strokeStyle = "rgba(95,107,122,0.14)";
+      wctx.lineWidth = 1;
+      wctx.beginPath();
+      wctx.moveTo(left, mid);
+      wctx.lineTo(right, mid);
+      wctx.stroke();
+
+      for (let i = 0; i <= 10; i++) {
+        const x = left + (i / 10) * length;
+        wctx.strokeStyle = i % 5 === 0 ? "rgba(199,212,228,0.6)" : "rgba(199,212,228,0.28)";
+        wctx.lineWidth = 1;
+        wctx.beginPath();
+        wctx.moveTo(x, mid - 42);
+        wctx.lineTo(x, mid + 42);
+        wctx.stroke();
+      }
+
+      const k = 2 * Math.PI / 120;
+      const omega = 0.12;
+      const ampF = 22;
+      const ampR = 22 * clamp(pref, 0, 1);
+
+      wctx.beginPath();
+      for (let x = left; x <= right; x++) {
+        const y = mid - ampF * Math.sin(k * (x - left) - omega * t);
+        if (x === left) wctx.moveTo(x, y);
+        else wctx.lineTo(x, y);
+      }
+      wctx.strokeStyle = "#1f7a4c";
+      wctx.lineWidth = 3;
+      wctx.stroke();
+
+      if (pref > 0.001) {
+        wctx.beginPath();
+        for (let x = left; x <= right; x++) {
+          const y = mid - ampR * Math.sin(k * (x - left) + omega * t);
+          if (x === left) wctx.moveTo(x, y);
+          else wctx.lineTo(x, y);
+        }
+        wctx.strokeStyle = "#b42318";
+        wctx.lineWidth = 2.4;
+        wctx.stroke();
+      }
+
+      wctx.beginPath();
+      for (let x = left; x <= right; x++) {
+        const yForward = mid - ampF * Math.sin(k * (x - left) - omega * t);
+        const yRef = pref > 0.001
+          ? mid - ampR * Math.sin(k * (x - left) + omega * t)
+          : mid;
+        const y = yForward + (yRef - mid);
+        if (x === left) wctx.moveTo(x, y);
+        else wctx.lineTo(x, y);
+      }
+      wctx.strokeStyle = "rgba(122,31,31,0.55)";
+      wctx.lineWidth = 1.5;
+      wctx.stroke();
+
+      wctx.fillStyle = "#1f2937";
+      wctx.font = "13px Arial";
+      wctx.fillText("Sender", left - 8, mid - 58);
+      wctx.fillText("Last", right - 18, mid - 58);
+
+      wctx.fillStyle = "#1f7a4c";
+      wctx.fillText("Hinwelle", left + 18, mid - 74);
+
+      if (pref > 0.001) {
+        wctx.fillStyle = "#b42318";
+        wctx.fillText("Rückwelle", right - 92, mid + 72);
+      }
+
+      wctx.fillStyle = "#c28400";
+      wctx.fillText(`übertragen: ${(ptrans * 100).toFixed(1)}%`, right - 130, mid - 88);
+    }
+
+    function draw() {
+      t += 1;
+
+      const { mode, Z0, ZL } = readInputs();
+      const gamma = reflectionCoefficient(ZL, Z0, mode);
+      const { pref, ptrans, aref, atransDemo } = updateNumericInfo(ZL, Z0, gamma, mode);
+
+      drawWaveIllustration(pref, ptrans);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const cx = 270;
+      const cy = 320;
+      const R = 220;
+
+      drawComplexGrid(cx, cy, R);
+
+      const px = cx + gamma.re * R;
+      const py = cy - gamma.im * R;
+
+      drawArrow(cx, cy, px, py, "#7a1f1f");
+
+      ctx.beginPath();
+      ctx.arc(px, py, 8, 0, Math.PI * 2);
+      ctx.fillStyle = "#7a1f1f";
+      ctx.fill();
+
+      ctx.fillStyle = "#1f2937";
+      ctx.font = "16px Arial";
+      ctx.fillText("Γ", px + 12, py - 8);
+
+      const barX = 590;
+      const barWidth = 300;
+      const barHeight = 30;
+      const startY = 170;
+      const gap = 105;
+
+      ctx.fillStyle = "#1f2937";
+      ctx.font = "14px Arial";
+      ctx.fillText("Bar-Modus für Wellen / Leistung", barX, 95);
+
+      drawBarGroup(barX, startY, barWidth, barHeight, "gesendet", 1.0, "#1f7a4c", "100.0%");
+      drawBarGroup(barX, startY + gap, barWidth, barHeight, "reflektiert", aref, "#b42318", `${(aref * 100).toFixed(1)}%`);
+      drawBarGroup(barX, startY + 2 * gap, barWidth, barHeight, "übertragen (Leistung)", ptrans, "#c28400", `${(ptrans * 100).toFixed(1)}%`);
+      drawBarGroup(barX, startY + 3 * gap, barWidth, barHeight, "Demo-Amplitude übertragen", atransDemo, "#7a1f1f", `${(atransDemo * 100).toFixed(1)}%`);
+
+      requestAnimationFrame(draw);
+    }
+
+    modeEl.addEventListener("change", setPreset);
+
+    z0El.addEventListener("input", () => {
+      if (modeEl.value === "match") {
+        zrEl.value = z0El.value;
+        zxEl.value = 0;
+      }
+    });
+
+    zrEl.addEventListener("input", () => {
+      if (modeEl.value !== "custom") modeEl.value = "custom";
+    });
+
+    zxEl.addEventListener("input", () => {
+      if (modeEl.value !== "custom") modeEl.value = "custom";
+    });
+
+    setPreset();
+    draw();
+  </script>
+</body>
+</html>

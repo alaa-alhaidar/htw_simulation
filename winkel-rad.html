@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radiant, Winkel und Wellen – Interaktive Simulation</title>
+  <link rel="stylesheet" href="uni-style.css" />
+  <style>
+    .compact-page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px 18px 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
+    }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 20px;
+      color: var(--primary);
+      line-height: 1.3;
+    }
+
+    .theorem-box {
+      background: var(--surface-2);
+      border-left: 4px solid var(--primary);
+      border: 1px solid var(--line);
+      border-left-width: 4px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .visual-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .canvas-box {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .canvas-title {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: var(--primary);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    #circleCanvas {
+      height: 420px;
+    }
+
+    #waveCanvas {
+      height: 300px;
+    }
+
+    .controls-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .field-inline {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-inline label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .value-display {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .value-display.wave-values {
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+    }
+
+    .value-item {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+
+    .value-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+    }
+
+    .value-number {
+      font-family: Consolas, monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.3;
+    }
+
+    .info-text {
+      margin-top: 10px;
+      padding: 12px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .formula {
+      font-family: Consolas, monospace;
+      background: #ffffff;
+      padding: 3px 7px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      color: var(--primary);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1100px) {
+      .visual-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .inputs-grid,
+      .value-display,
+      .value-display.wave-values {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .compact-page {
+        padding: 12px 12px 18px;
+      }
+
+      .inputs-grid,
+      .value-display,
+      .value-display.wave-values {
+        grid-template-columns: 1fr;
+      }
+
+      #circleCanvas {
+        height: 340px;
+      }
+
+      #waveCanvas {
+        height: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="compact-page">
+    <header class="header compact-header">
+      <div class="header-top">
+        <h1>Radiant, Winkel und Wellen</h1>
+        <p>
+          Interaktive Visualisierung des Radiantmaßes und des Zusammenhangs zwischen
+          Wellenlänge, Wellenzahl, Frequenz und Phase.
+        </p>
+      </div>
+
+      <div class="header-meta">
+        <div class="meta-box">
+          <div class="label">Themengebiet</div>
+          <div class="value">Mathematische Grundlagen / Wellenlehre</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Lernziel</div>
+          <div class="value">Radiant als Bogenmaß sowie Phase pro Meter einer Welle verstehen</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Definition</div>
+          <div class="value">1 rad entspricht einer Bogenlänge gleich dem Radius</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Interaktion</div>
+          <div class="value">Winkel, Wellenlänge und Geschwindigkeit direkt eingeben</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="section-card">
+      <h2 class="section-title">Radiant und Winkel</h2>
+
+      <div class="theorem-box">
+        Wenn bei einem Kreis die Bogenlänge gleich dem Radius ist, dann beträgt der Winkel
+        <span class="formula">1 rad</span>.
+      </div>
+
+      <div class="visual-grid">
+        <div class="canvas-box">
+          <h3 class="canvas-title">Kreis und Winkelbogen</h3>
+          <canvas id="circleCanvas" class="viz-canvas"></canvas>
+        </div>
+
+        <div class="controls-grid">
+          <div class="inputs-grid">
+            <div class="field-inline">
+              <label for="angleInput">Winkel [rad]</label>
+              <input type="number" id="angleInput" min="0" max="6.28" step="0.01" value="1" />
+            </div>
+          </div>
+
+          <div class="value-display">
+            <div class="value-item">
+              <div class="value-label">Radiant</div>
+              <div class="value-number" id="radValue">1.00</div>
+            </div>
+            <div class="value-item">
+              <div class="value-label">Grad</div>
+              <div class="value-number" id="degValue">57.30°</div>
+            </div>
+            <div class="value-item">
+              <div class="value-label">Bogenlänge / Radius</div>
+              <div class="value-number" id="arcRatioValue">1.00</div>
+            </div>
+          </div>
+
+          <div class="info-text">
+            <strong>Definition:</strong> Ein Radiant ist der Winkel, bei dem die Bogenlänge gleich dem Radius ist.
+            <br><br>
+            <span class="formula">1 rad ≈ 57.3°</span><br>
+            <span class="formula">2π rad = 360°</span><br>
+            <span class="formula">π rad = 180°</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <h2 class="section-title">Laufende Welle und Phase pro Meter</h2>
+
+      <div class="canvas-box">
+        <h3 class="canvas-title">Wellenausbreitung</h3>
+        <canvas id="waveCanvas" class="viz-canvas"></canvas>
+      </div>
+
+      <div class="controls-grid" style="margin-top:12px;">
+        <div class="inputs-grid">
+          <div class="field-inline">
+            <label for="wavelengthInput">Wellenlänge λ [m]</label>
+            <input type="number" id="wavelengthInput" min="0.5" max="5" step="0.1" value="2" />
+          </div>
+
+          <div class="field-inline">
+            <label for="speedInput">Geschwindigkeit [m/s]</label>
+            <input type="number" id="speedInput" min="0.1" max="3" step="0.1" value="1" />
+          </div>
+        </div>
+
+        <div class="value-display wave-values">
+          <div class="value-item">
+            <div class="value-label">Wellenlänge λ</div>
+            <div class="value-number" id="wavelengthValue">2.0 m</div>
+          </div>
+          <div class="value-item">
+            <div class="value-label">Wellenzahl k</div>
+            <div class="value-number" id="wavenumberValue">3.14 rad/m</div>
+          </div>
+          <div class="value-item">
+            <div class="value-label">Frequenz f</div>
+            <div class="value-number" id="frequencyValue">0.50 Hz</div>
+          </div>
+          <div class="value-item">
+            <div class="value-label">Kreisfrequenz ω</div>
+            <div class="value-number" id="omegaValue">3.14 rad/s</div>
+          </div>
+        </div>
+
+        <div class="info-text">
+          <strong>Wellengleichung:</strong> <span class="formula">y(x,t) = A · sin(kx - ωt)</span>
+          <br><br>
+          <strong>Wellenzahl k:</strong> <span class="formula">k = 2π / λ</span> — Phase pro Meter
+          <br>
+          <strong>Kreisfrequenz ω:</strong> <span class="formula">ω = 2πf = kv</span>
+          <br>
+          <strong>Ausbreitungsgeschwindigkeit:</strong> <span class="formula">v = λf</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const circleCanvas = document.getElementById('circleCanvas');
+    const circleCtx = circleCanvas.getContext('2d');
+    const angleInput = document.getElementById('angleInput');
+
+    const waveCanvas = document.getElementById('waveCanvas');
+    const waveCtx = waveCanvas.getContext('2d');
+    const wavelengthInput = document.getElementById('wavelengthInput');
+    const speedInput = document.getElementById('speedInput');
+
+    let time = 0;
+
+    function setupCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function resizeCanvases() {
+      setupCanvas(circleCanvas);
+      setupCanvas(waveCanvas);
+      drawCircle();
+      drawWave();
+    }
+
+    function drawCircle() {
+      const width = circleCanvas.getBoundingClientRect().width;
+      const height = circleCanvas.getBoundingClientRect().height;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const radius = Math.min(width, height) * 0.34;
+      const angle = parseFloat(angleInput.value) || 0;
+
+      circleCtx.clearRect(0, 0, width, height);
+
+      circleCtx.strokeStyle = '#0f4c81';
+      circleCtx.lineWidth = 2.5;
+      circleCtx.beginPath();
+      circleCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      circleCtx.stroke();
+
+      circleCtx.strokeStyle = '#b8c5d8';
+      circleCtx.lineWidth = 1;
+      circleCtx.beginPath();
+      circleCtx.moveTo(centerX - radius - 20, centerY);
+      circleCtx.lineTo(centerX + radius + 20, centerY);
+      circleCtx.stroke();
+
+      circleCtx.strokeStyle = '#5f6b7a';
+      circleCtx.lineWidth = 2;
+      circleCtx.beginPath();
+      circleCtx.moveTo(centerX, centerY);
+      circleCtx.lineTo(centerX + radius, centerY);
+      circleCtx.stroke();
+
+      circleCtx.strokeStyle = '#7a1f1f';
+      circleCtx.lineWidth = 3;
+      circleCtx.beginPath();
+      circleCtx.moveTo(centerX, centerY);
+      circleCtx.lineTo(centerX + radius * Math.cos(angle), centerY - radius * Math.sin(angle));
+      circleCtx.stroke();
+
+      circleCtx.strokeStyle = '#1f7a4c';
+      circleCtx.lineWidth = 4;
+      circleCtx.beginPath();
+      circleCtx.arc(centerX, centerY, radius, 0, -angle, true);
+      circleCtx.stroke();
+
+      circleCtx.strokeStyle = '#c28400';
+      circleCtx.lineWidth = 2;
+      circleCtx.beginPath();
+      circleCtx.arc(centerX, centerY, 44, 0, -angle, true);
+      circleCtx.stroke();
+
+      circleCtx.fillStyle = '#0f4c81';
+      circleCtx.beginPath();
+      circleCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+      circleCtx.fill();
+
+      circleCtx.fillStyle = '#7a1f1f';
+      circleCtx.beginPath();
+      circleCtx.arc(centerX + radius * Math.cos(angle), centerY - radius * Math.sin(angle), 6, 0, Math.PI * 2);
+      circleCtx.fill();
+
+      circleCtx.fillStyle = '#1f2937';
+      circleCtx.font = 'bold 15px Arial';
+      circleCtx.fillText('r', centerX + radius / 2 + 8, centerY - 8);
+      circleCtx.fillText('θ', centerX + 48, centerY - 16);
+
+      const arcX = centerX + radius * Math.cos(angle / 2);
+      const arcY = centerY - radius * Math.sin(angle / 2);
+      circleCtx.fillStyle = '#1f7a4c';
+      circleCtx.font = 'bold 14px Arial';
+      circleCtx.fillText('s = ' + angle.toFixed(2) + ' · r', arcX + 12, arcY - 12);
+
+      document.getElementById('radValue').textContent = angle.toFixed(2);
+      document.getElementById('degValue').textContent = (angle * 180 / Math.PI).toFixed(2) + '°';
+      document.getElementById('arcRatioValue').textContent = angle.toFixed(2);
+    }
+
+    function drawWave() {
+      const width = waveCanvas.getBoundingClientRect().width;
+      const height = waveCanvas.getBoundingClientRect().height;
+      const wavelength = parseFloat(wavelengthInput.value) || 2;
+      const speed = parseFloat(speedInput.value) || 1;
+      const amplitude = Math.min(60, height * 0.22);
+      const k = 2 * Math.PI / wavelength;
+      const frequency = speed / wavelength;
+      const omega = 2 * Math.PI * frequency;
+
+      waveCtx.clearRect(0, 0, width, height);
+
+      waveCtx.strokeStyle = '#e5e7eb';
+      waveCtx.lineWidth = 1;
+      for (let x = 0; x < width; x += 50) {
+        waveCtx.beginPath();
+        waveCtx.moveTo(x, 0);
+        waveCtx.lineTo(x, height);
+        waveCtx.stroke();
+      }
+
+      waveCtx.strokeStyle = '#b8c5d8';
+      waveCtx.lineWidth = 1.5;
+      waveCtx.beginPath();
+      waveCtx.moveTo(0, height / 2);
+      waveCtx.lineTo(width, height / 2);
+      waveCtx.stroke();
+
+      waveCtx.strokeStyle = '#0f4c81';
+      waveCtx.lineWidth = 2.5;
+      waveCtx.beginPath();
+
+      const pixelsPerMeter = 100;
+      for (let x = 0; x < width; x++) {
+        const xMeters = x / pixelsPerMeter;
+        const y = amplitude * Math.sin(k * xMeters - omega * time);
+        const canvasY = height / 2 - y;
+
+        if (x === 0) waveCtx.moveTo(x, canvasY);
+        else waveCtx.lineTo(x, canvasY);
+      }
+      waveCtx.stroke();
+
+      for (let i = 0; i < width / (wavelength * pixelsPerMeter); i++) {
+        const x = (i * wavelength + (omega * time / k)) * pixelsPerMeter;
+        if (x >= 0 && x < width) {
+          waveCtx.fillStyle = '#7a1f1f';
+          waveCtx.beginPath();
+          waveCtx.arc(x, height / 2, 5, 0, Math.PI * 2);
+          waveCtx.fill();
+
+          waveCtx.fillStyle = '#7a1f1f';
+          waveCtx.font = 'bold 12px Arial';
+          waveCtx.fillText(i + 'λ', x - 8, height / 2 + 24);
+        }
+      }
+
+      waveCtx.fillStyle = '#1f2937';
+      waveCtx.font = 'bold 14px Arial';
+      waveCtx.fillText('→ Ausbreitung', width - 120, 22);
+
+      waveCtx.fillStyle = '#5f6b7a';
+      waveCtx.font = '12px Arial';
+      for (let i = 0; i <= width / pixelsPerMeter; i++) {
+        waveCtx.fillText(i + ' m', i * pixelsPerMeter - 8, height - 8);
+      }
+
+      document.getElementById('wavelengthValue').textContent = wavelength.toFixed(1) + ' m';
+      document.getElementById('wavenumberValue').textContent = k.toFixed(2) + ' rad/m';
+      document.getElementById('frequencyValue').textContent = frequency.toFixed(2) + ' Hz';
+      document.getElementById('omegaValue').textContent = omega.toFixed(2) + ' rad/s';
+    }
+
+    function animate() {
+      time += 0.02;
+      drawWave();
+      requestAnimationFrame(animate);
+    }
+
+    angleInput.addEventListener('input', drawCircle);
+    wavelengthInput.addEventListener('input', drawWave);
+    speedInput.addEventListener('input', drawWave);
+
+    window.addEventListener('resize', resizeCanvases);
+
+    resizeCanvases();
+    animate();
+  </script>
+</body>
+</html>

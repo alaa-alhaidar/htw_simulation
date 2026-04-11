@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Konstellationsdiagramme – Interaktive Simulation</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
+  <link rel="stylesheet" href="uni-style.css" />
+  <style>
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .plots-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .plot-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .plot-title {
+      margin: 0 0 12px;
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .plot-box {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      min-height: 460px;
+    }
+
+    #idealPlot,
+    #noisyPlot {
+      width: 100%;
+      min-height: 430px;
+    }
+
+    .info-grid-local {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .info-item {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .info-item h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: var(--primary);
+    }
+
+    .info-item p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .metric {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    @media (max-width: 1100px) {
+      .plots-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .info-grid-local {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .info-grid-local {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-top">
+        <h1>Konstellationsdiagramme – Interaktive Simulation</h1>
+        <p>
+          Vergleich idealer und verrauschter Konstellationen für digitale Modulationsverfahren
+          mit interaktiver Einstellung von SNR und Symbolanzahl.
+        </p>
+      </div>
+
+      <div class="header-meta">
+        <div class="meta-box">
+          <div class="label">Themengebiet</div>
+          <div class="value">Digitale Modulation / Signalraum</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Lernziel</div>
+          <div class="value">Einfluss von Modulationsart und Rauschen auf Symbolverteilung verstehen</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Verfahren</div>
+          <div class="value">BPSK, QPSK, 8PSK, 16QAM und 64QAM</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Interaktion</div>
+          <div class="value">Modulationsart, SNR und Anzahl der Symbole frei einstellbar</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="card" style="margin-bottom: 18px;">
+      <h2>Eingabe und Steuerung</h2>
+
+      <div class="controls-grid">
+        <div class="field">
+          <label for="schemeSelect">Modulationsverfahren</label>
+          <select id="schemeSelect">
+            <option value="BPSK">BPSK (Binary Phase Shift Keying)</option>
+            <option value="QPSK">QPSK (Quadrature Phase Shift Keying)</option>
+            <option value="8PSK">8-PSK (8 Phase Shift Keying)</option>
+            <option value="16QAM">16-QAM (16 Quadrature Amplitude Modulation)</option>
+            <option value="64QAM">64-QAM (64 Quadrature Amplitude Modulation)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="noiseSlider">Rauschpegel SNR: <span id="snrValue">20</span> dB</label>
+          <input type="range" id="noiseSlider" min="0" max="30" value="20" step="1" />
+          </div>
+
+        <div class="field">
+          <label for="symbolCount">Anzahl Symbole</label>
+          <select id="symbolCount">
+            <option value="100">100</option>
+            <option value="500" selected>500</option>
+            <option value="1000">1000</option>
+            <option value="2000">2000</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn-primary" id="generateButton">Neue Daten erzeugen</button>
+        </div>
+      </div>
+
+      <div class="small-note">
+        Links wird die ideale Konstellation angezeigt, rechts die verrauschte Symbolwolke für die gewählte Modulationsart.
+      </div>
+    </section>
+
+    <section class="plots-grid">
+      <div class="plot-card">
+        <h2 class="plot-title">Ideale Konstellation</h2>
+        <div class="plot-box">
+          <div id="idealPlot"></div>
+        </div>
+      </div>
+
+      <div class="plot-card">
+        <h2 class="plot-title">Mit Rauschen</h2>
+        <div class="plot-box">
+          <div id="noisyPlot"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Modulationsverfahren – Kennwerte</h2>
+      <div class="info-grid-local" id="infoGrid"></div>
+    </section>
+
+    <div class="footer-note">
+      Diese Seite verwendet die gemeinsame Datei <strong>uni-style.css</strong> und ergänzt nur modulationsspezifische Layoutregeln.
+    </div>
+  </div>
+
+  <script>
+    const constellationData = {
+      BPSK: {
+        points: [
+          { re: 1, im: 0 },
+          { re: -1, im: 0 }
+        ],
+        labels: ['0', '1'],
+        bitsPerSymbol: 1,
+        description: 'Einfachste digitale Modulation mit zwei Phasenzuständen',
+        minDistance: 2.0
+      },
+      QPSK: {
+        points: [
+          { re: 1 / Math.sqrt(2), im: 1 / Math.sqrt(2) },
+          { re: -1 / Math.sqrt(2), im: 1 / Math.sqrt(2) },
+          { re: -1 / Math.sqrt(2), im: -1 / Math.sqrt(2) },
+          { re: 1 / Math.sqrt(2), im: -1 / Math.sqrt(2) }
+        ],
+        labels: ['00', '10', '11', '01'],
+        bitsPerSymbol: 2,
+        description: 'Vier Phasenzustände für höhere Datenrate',
+        minDistance: Math.sqrt(2)
+      },
+      '8PSK': {
+        points: Array.from({ length: 8 }, (_, k) => ({
+          re: Math.cos(k * Math.PI / 4),
+          im: Math.sin(k * Math.PI / 4)
+        })),
+        labels: ['000', '001', '010', '011', '100', '101', '110', '111'],
+        bitsPerSymbol: 3,
+        description: 'Acht gleichmäßig verteilte Phasenzustände',
+        minDistance: 2 * Math.sin(Math.PI / 8)
+      },
+      '16QAM': {
+        points: (() => {
+          const levels = [-3, -1, 1, 3];
+          const points = [];
+          for (let im of levels) {
+            for (let re of levels) {
+              points.push({
+                re: re / Math.sqrt(10),
+                im: im / Math.sqrt(10)
+              });
+            }
+          }
+          return points;
+        })(),
+        labels: Array.from({ length: 16 }, (_, i) => i.toString(2).padStart(4, '0')),
+        bitsPerSymbol: 4,
+        description: 'Amplitude und Phase werden gemeinsam moduliert',
+        minDistance: 2 / Math.sqrt(10)
+      },
+      '64QAM': {
+        points: (() => {
+          const levels = [-7, -5, -3, -1, 1, 3, 5, 7];
+          const points = [];
+          for (let im of levels) {
+            for (let re of levels) {
+              points.push({
+                re: re / Math.sqrt(42),
+                im: im / Math.sqrt(42)
+              });
+            }
+          }
+          return points;
+        })(),
+        labels: Array.from({ length: 64 }, (_, i) => i.toString(2).padStart(6, '0')),
+        bitsPerSymbol: 6,
+        description: 'Hohe Spektrumeffizienz mit 64 Symbolpunkten',
+        minDistance: 2 / Math.sqrt(42)
+      }
+    };
+
+    function getConstellation(scheme) {
+      return constellationData[scheme];
+    }
+
+    function gaussianNoise() {
+      let u = 0, v = 0;
+      while (u === 0) u = Math.random();
+      while (v === 0) v = Math.random();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function snrToNoiseVariance(snrDb) {
+      const snrLinear = Math.pow(10, snrDb / 10);
+      return 1 / (2 * snrLinear);
+    }
+
+    function generateNoisySymbols(constellation, numSymbols, noiseVariance) {
+      const symbols = [];
+      const { points, labels } = constellation;
+
+      for (let i = 0; i < numSymbols; i++) {
+        const idx = Math.floor(Math.random() * points.length);
+        const idealPoint = points[idx];
+
+        const noiseI = gaussianNoise() * Math.sqrt(noiseVariance);
+        const noiseQ = gaussianNoise() * Math.sqrt(noiseVariance);
+
+        symbols.push({
+          ideal: idealPoint,
+          noisy: {
+            re: idealPoint.re + noiseI,
+            im: idealPoint.im + noiseQ
+          },
+          label: labels[idx]
+        });
+      }
+
+      return symbols;
+    }
+
+    function createPlot(elementId, constellation, symbols, showNoise = false) {
+      const { points, labels } = constellation;
+
+      const idealTrace = {
+        x: points.map(p => p.re),
+        y: points.map(p => p.im),
+        mode: 'markers+text',
+        type: 'scatter',
+        name: 'Ideale Symbole',
+        marker: {
+          size: 12,
+          color: '#7a1f1f',
+          symbol: 'diamond',
+          line: { width: 2, color: '#0f4c81' }
+        },
+        text: labels,
+        textposition: 'top right',
+        textfont: { size: 10, color: '#1f2937', family: 'Consolas, monospace' }
+      };
+
+      const traces = [idealTrace];
+
+      if (showNoise && symbols) {
+        traces.push({
+          x: symbols.map(s => s.noisy.re),
+          y: symbols.map(s => s.noisy.im),
+          mode: 'markers',
+          type: 'scatter',
+          name: 'Empfangene Symbole',
+          marker: {
+            size: 4,
+            color: '#0f4c81',
+            opacity: 0.55,
+            symbol: 'circle'
+          }
+        });
+      }
+
+      const layout = {
+        xaxis: {
+          title: { text: 'In-Phase (I)', font: { size: 14, color: '#1f2937' } },
+          zeroline: true,
+          zerolinecolor: '#cbd5e1',
+          zerolinewidth: 2,
+          gridcolor: '#e5e7eb',
+          showgrid: true
+        },
+        yaxis: {
+          title: { text: 'Quadratur (Q)', font: { size: 14, color: '#1f2937' } },
+          zeroline: true,
+          zerolinecolor: '#cbd5e1',
+          zerolinewidth: 2,
+          gridcolor: '#e5e7eb',
+          showgrid: true,
+          scaleanchor: 'x'
+        },
+        plot_bgcolor: '#ffffff',
+        paper_bgcolor: 'transparent',
+        margin: { t: 20, r: 20, b: 60, l: 60 },
+        showlegend: showNoise,
+        legend: {
+          x: 1.02,
+          y: 1,
+          bgcolor: 'rgba(255,255,255,0.9)',
+          bordercolor: '#d7dde7',
+          borderwidth: 1
+        },
+        font: { family: '"Segoe UI", Arial, sans-serif', color: '#1f2937' }
+      };
+
+      const config = {
+        responsive: true,
+        displayModeBar: true,
+        modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
+        displaylogo: false
+      };
+
+      Plotly.newPlot(elementId, traces, layout, config).then(() => {
+        Plotly.Plots.resize(document.getElementById(elementId));
+      });
+    }
+
+    function erfc(x) {
+      const a1 = 0.254829592;
+      const a2 = -0.284496736;
+      const a3 = 1.421413741;
+      const a4 = -1.453152027;
+      const a5 = 1.061405429;
+      const p = 0.3275911;
+
+      const sign = x >= 0 ? 1 : -1;
+      x = Math.abs(x);
+
+      const t = 1.0 / (1.0 + p * x);
+      const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+
+      return 1 - sign * y;
+    }
+
+    function estimateBER(scheme, snrDb) {
+      const snrLinear = Math.pow(10, snrDb / 10);
+      const gamma = snrLinear;
+
+      switch (scheme) {
+        case 'BPSK':
+          return 0.5 * erfc(Math.sqrt(gamma));
+        case 'QPSK':
+          return 0.5 * erfc(Math.sqrt(gamma));
+        case '8PSK':
+          return (2 / 3) * erfc(Math.sqrt(3 * gamma) * Math.sin(Math.PI / 8));
+        case '16QAM':
+          return 0.75 * erfc(Math.sqrt(0.4 * gamma));
+        case '64QAM':
+          return (7 / 12) * erfc(Math.sqrt(gamma / 42));
+        default:
+          return 0.1;
+      }
+    }
+
+    function updateInfoPanel(scheme, constellation, symbols, snrDb) {
+      const { bitsPerSymbol, description, minDistance } = constellation;
+      const symbolRate = 1000;
+      const dataRate = symbolRate * bitsPerSymbol;
+      const spectralEfficiency = bitsPerSymbol;
+      const theoreticalBER = estimateBER(scheme, snrDb);
+
+      let errors = 0;
+      if (symbols) {
+        symbols.forEach(symbol => {
+          const distances = constellation.points.map(ideal =>
+            Math.sqrt((symbol.noisy.re - ideal.re) ** 2 + (symbol.noisy.im - ideal.im) ** 2)
+          );
+          const detectedIdx = distances.indexOf(Math.min(...distances));
+          const actualIdx = constellation.labels.indexOf(symbol.label);
+          if (detectedIdx !== actualIdx) errors++;
+        });
+      }
+
+      const empiricalSER = symbols ? (errors / symbols.length) : 0;
+
+      document.getElementById('infoGrid').innerHTML = `
+        <div class="info-item">
+          <h3>Modulationsschema</h3>
+          <p><strong>${scheme}</strong><br>${description}</p>
+        </div>
+        <div class="info-item">
+          <h3>Technische Parameter</h3>
+          <p>
+            Bits pro Symbol: <span class="metric">${bitsPerSymbol}</span><br>
+            Anzahl Symbole: <span class="metric">${constellation.points.length}</span><br>
+            Minimaler Symbolabstand: <span class="metric">${minDistance.toFixed(3)}</span>
+          </p>
+        </div>
+        <div class="info-item">
+          <h3>Leistungskennwerte</h3>
+          <p>
+            Spektrale Effizienz: <span class="metric">${spectralEfficiency} bit/s/Hz</span><br>
+            Beispiel-Datenrate: <span class="metric">${dataRate} bit/s</span><br>
+            SNR: <span class="metric">${snrDb} dB</span>
+          </p>
+        </div>
+        <div class="info-item">
+          <h3>Fehleranalyse</h3>
+          <p>
+            Theoretische BER: <span class="metric">${theoreticalBER.toExponential(2)}</span><br>
+            Empirische SER: <span class="metric">${empiricalSER.toFixed(4)}</span><br>
+            Fehleranzahl: <span class="metric">${symbols ? errors : 0}</span>
+          </p>
+        </div>
+      `;
+    }
+
+    function updatePlots() {
+      const scheme = document.getElementById('schemeSelect').value;
+      const snrDb = parseInt(document.getElementById('noiseSlider').value, 10);
+      const numSymbols = parseInt(document.getElementById('symbolCount').value, 10);
+
+      document.getElementById('snrValue').textContent = snrDb;
+
+      const constellation = getConstellation(scheme);
+      const noiseVariance = snrToNoiseVariance(snrDb);
+      const symbols = generateNoisySymbols(constellation, numSymbols, noiseVariance);
+
+      createPlot('idealPlot', constellation, null, false);
+      createPlot('noisyPlot', constellation, symbols, true);
+      updateInfoPanel(scheme, constellation, symbols, snrDb);
+    }
+
+    function addEventListeners() {
+      document.getElementById('schemeSelect').addEventListener('change', updatePlots);
+      document.getElementById('noiseSlider').addEventListener('input', updatePlots);
+      document.getElementById('symbolCount').addEventListener('change', updatePlots);
+      document.getElementById('generateButton').addEventListener('click', updatePlots);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      addEventListeners();
+      setTimeout(updatePlots, 100);
+    });
+
+    window.onload = function () {
+      if (!document.getElementById('idealPlot').hasChildNodes()) {
+        updatePlots();
+      }
+    };
+  </script>
+</body>
+</html>

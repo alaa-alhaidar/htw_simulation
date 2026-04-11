@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smith-Diagramm – Interaktive Simulation</title>
+  <link rel="stylesheet" href="uni-style.css" />
+  <style>
+    .compact-page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px 18px 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .chart-card,
+    .side-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .chart-title,
+    .side-card h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      color: var(--primary);
+      line-height: 1.3;
+    }
+
+    .canvas-wrap {
+      width: 100%;
+      max-width: min(72vh, 760px, 100%);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid var(--line);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    .legend {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
+
+    .controls-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .info-box {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field-inline {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-inline label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .metric {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+    }
+
+    .metric-value {
+      font-family: Consolas, monospace;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.45;
+      white-space: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    @media (max-width: 1180px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .canvas-wrap {
+        max-width: min(78vw, 720px);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .compact-page {
+        padding: 12px 12px 18px;
+      }
+
+      .input-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .canvas-wrap {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="compact-page">
+    <header class="header compact-header">
+      <div class="header-top">
+        <h1>Smith-Diagramm – Interaktive Simulation</h1>
+        <p>
+          Visualisierung von Lastpunkt, normierter Impedanz, Reflexionsfaktor und
+          verlustloser L-Anpassung mit der Topologie Parallel → Serie.
+        </p>
+      </div>
+
+      <div class="header-meta">
+        <div class="meta-box">
+          <div class="label">Themengebiet</div>
+          <div class="value">Leitungstheorie / Anpassung</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Lernziel</div>
+          <div class="value">Zusammenhang zwischen z, y, Γ und Anpassungsweg verstehen</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Normierung</div>
+          <div class="value">Z₀ = 50 Ω, Y₀ = 0.02 S</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Interaktion</div>
+          <div class="value">Punkt anklicken oder R/X direkt eingeben</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="main-grid">
+      <div class="chart-card">
+        <h2 class="chart-title">Interaktives Smith-Diagramm</h2>
+
+        <div class="canvas-wrap">
+          <canvas id="smithChart"></canvas>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background:#4a90e2;"></div>
+            <span>r-Kreise</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background:#1f7a4c;"></div>
+            <span>x-Bögen</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background:#c28400;"></div>
+            <span>Zielkreis Re(z)=1</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background:#0891b2;"></div>
+            <span>Parallel-Schritt</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background:#c026d3;"></div>
+            <span>Serien-Schritt</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background:#b42318;"></div>
+            <span>Lastpunkt</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-stack">
+        <div class="side-card">
+          <h2>Eingabe</h2>
+
+          <div class="info-box">
+            Klicke ins Diagramm oder ändere R/X. Wenn eine verlustlose L-Anpassung
+            der Form <strong>Parallel → Serie</strong> möglich ist, wird der Anpassungsweg eingezeichnet.
+          </div>
+
+          <div class="input-grid" style="margin-top:10px;">
+            <div class="field-inline">
+              <label for="resistance">R (Ω)</label>
+              <input type="number" id="resistance" value="100" step="1" />
+            </div>
+
+            <div class="field-inline">
+              <label for="reactance">X (Ω)</label>
+              <input type="number" id="reactance" value="0" step="1" />
+            </div>
+          </div>
+
+          <div class="pill-row">
+            <div class="pill">Z₀ = 50 Ω</div>
+            <div class="pill">Y₀ = 0.02 S</div>
+            <div class="pill">Topologie: Parallel → Serie</div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h2>Last</h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="metric-label">Impedanz</div>
+              <div class="metric-value" id="impedance">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Normierte z</div>
+              <div class="metric-value" id="normalizedZ">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Admittanz Y</div>
+              <div class="metric-value" id="admittance">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Normierte y</div>
+              <div class="metric-value" id="normalizedY">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Γ</div>
+              <div class="metric-value" id="gamma">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">SWR</div>
+              <div class="metric-value" id="swr">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h2>Anpassungsschritte</h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="metric-label">Zwischenadmittanz y₁</div>
+              <div class="metric-value" id="stepY1">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Zwischenimpedanz z₁</div>
+              <div class="metric-value" id="stepZ1">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Parallele Zusatzsuszeptanz Δb</div>
+              <div class="metric-value" id="stepBadd">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Serielle Zusatzreaktanz Δx</div>
+              <div class="metric-value" id="stepXadd">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Bauelemente bei Z₀ = 50 Ω</div>
+              <div class="metric-value" id="stepType">-</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Status</div>
+              <div class="metric-value" id="matchStatus">-</div>
+            </div>
+          </div>
+
+          <div class="small-note">
+            Der erste Schritt erfolgt in der <strong>Admittanzebene</strong> durch ein Parallelelement.
+            Danach geht es in der <strong>Impedanzebene</strong> mit einem Serienelement zum Mittelpunkt.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("smithChart");
+    const ctx = canvas.getContext("2d");
+
+    const Z0 = 50;
+    const Y0 = 1 / Z0;
+
+    let currentR = 100;
+    let currentX = 0;
+
+    let centerX = 0;
+    let centerY = 0;
+    let radius = 0;
+
+    function zToGamma(r, x) {
+      const zr = r / Z0;
+      const zx = x / Z0;
+      const denom = (zr + 1) * (zr + 1) + zx * zx;
+      return {
+        real: (zr * zr + zx * zx - 1) / denom,
+        imag: (2 * zx) / denom
+      };
+    }
+
+    function gammaToZ(gamma) {
+      const gr = gamma.real;
+      const gi = gamma.imag;
+      const denom = (1 - gr) * (1 - gr) + gi * gi;
+      return {
+        r: Z0 * (1 - gr * gr - gi * gi) / denom,
+        x: Z0 * (2 * gi) / denom
+      };
+    }
+
+    function gammaToCanvas(gamma) {
+      return {
+        x: centerX + gamma.real * radius,
+        y: centerY - gamma.imag * radius
+      };
+    }
+
+    function canvasToGamma(x, y) {
+      return {
+        real: (x - centerX) / radius,
+        imag: -(y - centerY) / radius
+      };
+    }
+
+    function impedanceToAdmittance(r, x) {
+      const denom = r * r + x * x;
+      return {
+        g: r / denom,
+        b: -x / denom
+      };
+    }
+
+    function formatComplex(real, imag, digits = 3) {
+      return `${real.toFixed(digits)} ${imag >= 0 ? "+" : "-"}j${Math.abs(imag).toFixed(digits)}`;
+    }
+
+    function drawLabel(text, x, y, color, align = "left", sizeFactor = 0.04) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.font = `700 ${Math.max(10, radius * sizeFactor)}px Arial`;
+      ctx.textAlign = align;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    }
+
+    function drawOuterCircle() {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.strokeStyle = "#1f2937";
+      ctx.lineWidth = Math.max(2, radius * 0.008);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(centerX - radius, centerY);
+      ctx.lineTo(centerX + radius, centerY);
+      ctx.strokeStyle = "rgba(31,41,55,0.25)";
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawResistanceCircles() {
+      const rMajor = [0, 0.2, 0.5, 1, 2, 5];
+      const rMinor = [0.1, 0.3, 0.7, 1.5, 3, 10];
+
+      ctx.save();
+
+      rMinor.forEach(r => {
+        const cx = centerX + radius * (r / (1 + r));
+        const cr = radius / (1 + r);
+        ctx.beginPath();
+        ctx.arc(cx, centerY, cr, 0, 2 * Math.PI);
+        ctx.strokeStyle = "rgba(74,144,226,0.12)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      rMajor.forEach(r => {
+        const cx = centerX + radius * (r / (1 + r));
+        const cr = radius / (1 + r);
+
+        ctx.beginPath();
+        ctx.arc(cx, centerY, cr, 0, 2 * Math.PI);
+        ctx.strokeStyle = r === 1 ? "rgba(194,132,0,0.95)" : "rgba(74,144,226,0.38)";
+        ctx.lineWidth = r === 1 ? 2.1 : 1.1;
+        ctx.stroke();
+
+        drawLabel(`R=${(r * Z0).toFixed(0)}Ω`, cx, centerY - cr - 8, r === 1 ? "#c28400" : "#4a90e2", "center", 0.032);
+      });
+
+      ctx.restore();
+    }
+
+    function drawReactanceArcs() {
+      const xMajor = [0.1, 0.2, 0.3, 0.5, 1, 2, 3, 5, 10];
+      const xMinor = [0.15, 0.25, 0.4, 0.7, 1.5, 4, 7];
+
+      ctx.save();
+
+      function drawArcSet(values, alpha, lineWidth) {
+        values.forEach(x => {
+          const cX = centerX + radius;
+          const rArc = radius / x;
+
+          const cYPos = centerY - radius / x;
+          const cYNeg = centerY + radius / x;
+
+          ctx.beginPath();
+          ctx.arc(cX, cYPos, rArc, Math.PI / 2, Math.PI);
+          ctx.strokeStyle = `rgba(31,122,76,${alpha})`;
+          ctx.lineWidth = lineWidth;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(cX, cYNeg, rArc, Math.PI, 1.5 * Math.PI);
+          ctx.strokeStyle = `rgba(31,122,76,${alpha})`;
+          ctx.lineWidth = lineWidth;
+          ctx.stroke();
+        });
+      }
+
+      drawArcSet(xMinor, 0.10, 0.85);
+      drawArcSet(xMajor, 0.34, 1.0);
+
+      xMajor.forEach(x => {
+        const gy = zToGamma(Z0, x * Z0);
+        const py = zToGamma(Z0, -x * Z0);
+        const p1 = gammaToCanvas(gy);
+        const p2 = gammaToCanvas(py);
+
+        drawLabel(`+j${x}`, p1.x + 7, p1.y - 3, "#1f7a4c", "left", 0.028);
+        drawLabel(`-j${x}`, p2.x + 7, p2.y + 14, "#1f7a4c", "left", 0.028);
+      });
+
+      ctx.restore();
+    }
+
+    function drawHighlightedResistanceCircle() {
+      const r = currentR / Z0;
+      if (r < 0) return;
+
+      const cx = centerX + radius * (r / (1 + r));
+      const cr = radius / (1 + r);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, centerY, cr, 0, 2 * Math.PI);
+      ctx.strokeStyle = "#4a90e2";
+      ctx.lineWidth = Math.max(2.5, radius * 0.007);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawHighlightedReactanceArc() {
+      const x = currentX / Z0;
+      if (Math.abs(x) < 1e-9) return;
+
+      const cX = centerX + radius;
+      const rArc = radius / Math.abs(x);
+      const cY = x > 0 ? centerY - radius / Math.abs(x) : centerY + radius / Math.abs(x);
+
+      ctx.save();
+      ctx.beginPath();
+
+      if (x > 0) ctx.arc(cX, cY, rArc, Math.PI / 2, Math.PI);
+      else ctx.arc(cX, cY, rArc, Math.PI, 1.5 * Math.PI);
+
+      ctx.strokeStyle = "#1f7a4c";
+      ctx.lineWidth = Math.max(2.5, radius * 0.007);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawSWRRings() {
+      const swrValues = [1.2, 1.5, 2, 3, 5];
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+
+      swrValues.forEach((swr, idx) => {
+        const gammaAbs = (swr - 1) / (swr + 1);
+        const rr = radius * gammaAbs;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, rr, 0, 2 * Math.PI);
+        ctx.strokeStyle = idx < 2 ? "rgba(194,132,0,0.18)" : "rgba(194,132,0,0.30)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function calculateMatchPath() {
+      const z = { r: currentR / Z0, x: currentX / Z0 };
+      const denom = z.r * z.r + z.x * z.x;
+      if (denom <= 1e-12) return { possible: false, reason: "Ungültige Last." };
+
+      const y = {
+        g: z.r / denom,
+        b: -z.x / denom
+      };
+
+      const disc = y.g - y.g * y.g;
+      if (disc < -1e-10) {
+        return {
+          possible: false,
+          reason: "Mit Topologie Parallel → Serie ist keine verlustlose L-Anpassung möglich."
+        };
+      }
+
+      const root = Math.sqrt(Math.max(0, disc));
+
+      const candidates = [root, -root].map(b1 => {
+        const y1 = { g: y.g, b: b1 };
+        const z1Den = y1.g * y1.g + y1.b * y1.b;
+        const z1 = {
+          r: y1.g / z1Den,
+          x: -y1.b / z1Den
+        };
+        const bAdd = y1.b - y.b;
+        const xAdd = -z1.x;
+        return { y, y1, z1, bAdd, xAdd };
+      });
+
+      candidates.sort((a, b) => {
+        const prefA = a.y1.b >= 0 ? 0 : 1;
+        const prefB = b.y1.b >= 0 ? 0 : 1;
+        if (prefA !== prefB) return prefA - prefB;
+        return Math.abs(a.bAdd) - Math.abs(b.bAdd);
+      });
+
+      return { possible: true, ...candidates[0] };
+    }
+
+    function drawMatchPath() {
+      const match = calculateMatchPath();
+      if (!match.possible) return;
+
+      const startGamma = zToGamma(currentR, currentX);
+      const startP = gammaToCanvas(startGamma);
+
+      const z1Gamma = zToGamma(match.z1.r * Z0, match.z1.x * Z0);
+      const z1P = gammaToCanvas(z1Gamma);
+
+      const g = match.y.g;
+      const bStart = match.y.b;
+      const bEnd = match.y1.b;
+      const steps = 100;
+
+      ctx.save();
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const tt = i / steps;
+        const b = bStart + (bEnd - bStart) * tt;
+        const gamma = {
+          real: (1 - g * g - b * b) / ((1 + g) * (1 + g) + b * b),
+          imag: (-2 * b) / ((1 + g) * (1 + g) + b * b)
+        };
+        const p = gammaToCanvas(gamma);
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = "#0891b2";
+      ctx.lineWidth = Math.max(2.6, radius * 0.006);
+      ctx.setLineDash([9, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const tt = i / steps;
+        const x = match.z1.x + (0 - match.z1.x) * tt;
+        const gamma = zToGamma(1 * Z0, x * Z0);
+        const p = gammaToCanvas(gamma);
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = "#c026d3";
+      ctx.lineWidth = Math.max(2.6, radius * 0.006);
+      ctx.setLineDash([6, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(z1P.x, z1P.y, Math.max(5, radius * 0.018), 0, 2 * Math.PI);
+      ctx.fillStyle = "#0891b2";
+      ctx.fill();
+      ctx.restore();
+
+      drawLabel("z₁", z1P.x + 8, z1P.y - 8, "#0891b2", "left", 0.028);
+      drawLabel("Start", startP.x + 8, startP.y - 8, "#b42318", "left", 0.027);
+    }
+
+    function drawReferencePoints() {
+      ctx.save();
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, Math.max(4, radius * 0.014), 0, 2 * Math.PI);
+      ctx.fillStyle = "#1f7a4c";
+      ctx.fill();
+
+      drawLabel("Z₀", centerX - 12, centerY + 20, "#1f2937", "left", 0.03);
+      drawLabel("0", centerX - radius - 10, centerY + 5, "#1f2937", "right", 0.03);
+      drawLabel("∞", centerX + radius + 10, centerY + 5, "#1f2937", "left", 0.03);
+
+      ctx.restore();
+    }
+
+    function drawCurrentPoint() {
+      const gamma = zToGamma(currentR, currentX);
+      const p = gammaToCanvas(gamma);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = "rgba(180,35,24,0.20)";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(6, radius * 0.022), 0, 2 * Math.PI);
+      ctx.fillStyle = "#b42318";
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawSmithChart() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawOuterCircle();
+      drawSWRRings();
+      drawResistanceCircles();
+      drawReactanceArcs();
+      drawHighlightedResistanceCircle();
+      drawHighlightedReactanceArc();
+      drawMatchPath();
+      drawReferencePoints();
+      drawCurrentPoint();
+    }
+
+    function updateDisplay() {
+      const gamma = zToGamma(currentR, currentX);
+      const gammaAbs = Math.hypot(gamma.real, gamma.imag);
+      const gammaPhase = Math.atan2(gamma.imag, gamma.real) * 180 / Math.PI;
+      const swr = gammaAbs < 0.999999 ? (1 + gammaAbs) / (1 - gammaAbs) : Infinity;
+
+      const zNormR = currentR / Z0;
+      const zNormX = currentX / Z0;
+
+      const y = impedanceToAdmittance(currentR, currentX);
+      const yNorm = { g: y.g / Y0, b: y.b / Y0 };
+
+      document.getElementById("impedance").textContent =
+        `${currentR.toFixed(3)} ${currentX >= 0 ? "+" : "-"}j${Math.abs(currentX).toFixed(3)} Ω`;
+
+      document.getElementById("normalizedZ").textContent =
+        `${zNormR.toFixed(3)} ${zNormX >= 0 ? "+" : "-"}j${Math.abs(zNormX).toFixed(3)}`;
+
+      document.getElementById("admittance").textContent =
+        `${y.g.toFixed(5)} ${y.b >= 0 ? "+" : "-"}j${Math.abs(y.b).toFixed(5)} S`;
+
+      document.getElementById("normalizedY").textContent =
+        `${yNorm.g.toFixed(3)} ${yNorm.b >= 0 ? "+" : "-"}j${Math.abs(yNorm.b).toFixed(3)}`;
+
+      document.getElementById("gamma").textContent =
+        `${gammaAbs.toFixed(4)} ∠ ${gammaPhase.toFixed(1)}°`;
+
+      document.getElementById("swr").textContent =
+        Number.isFinite(swr) ? swr.toFixed(3) : "∞";
+
+      const match = calculateMatchPath();
+
+      if (!match.possible) {
+        document.getElementById("stepY1").textContent = "-";
+        document.getElementById("stepZ1").textContent = "-";
+        document.getElementById("stepBadd").textContent = "-";
+        document.getElementById("stepXadd").textContent = "-";
+        document.getElementById("stepType").textContent = "-";
+        document.getElementById("matchStatus").textContent = match.reason;
+      } else {
+        document.getElementById("stepY1").textContent =
+          `${formatComplex(match.y1.g, match.y1.b)} (normiert)`;
+
+        document.getElementById("stepZ1").textContent =
+          `${formatComplex(match.z1.r, match.z1.x)} (normiert)`;
+
+        document.getElementById("stepBadd").textContent =
+          `${match.bAdd >= 0 ? "+" : "-"}j${Math.abs(match.bAdd).toFixed(4)}  →  ${match.bAdd >= 0 ? "+" : "-"}j${Math.abs(match.bAdd * Y0).toFixed(6)} S`;
+
+        document.getElementById("stepXadd").textContent =
+          `${match.xAdd >= 0 ? "+" : "-"}j${Math.abs(match.xAdd).toFixed(4)}  →  ${match.xAdd >= 0 ? "+" : "-"}j${Math.abs(match.xAdd * Z0).toFixed(3)} Ω`;
+
+        const shuntElement = match.bAdd >= 0 ? "Parallel-Kondensator" : "Parallel-Induktivität";
+        const seriesElement = match.xAdd >= 0 ? "Serien-Induktivität" : "Serien-Kondensator";
+
+        document.getElementById("stepType").textContent =
+          `${shuntElement}, danach ${seriesElement}`;
+
+        document.getElementById("matchStatus").textContent =
+          "Verlustlose L-Anpassung mit Topologie Parallel → Serie möglich.";
+      }
+
+      drawSmithChart();
+    }
+
+    function resizeCanvas() {
+      const wrap = canvas.parentElement;
+      const size = Math.floor(wrap.clientWidth);
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.floor(size * dpr);
+      canvas.height = Math.floor(size * dpr);
+      canvas.style.width = `${size}px`;
+      canvas.style.height = `${size}px`;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      centerX = size / 2;
+      centerY = size / 2;
+      radius = size * 0.42;
+
+      updateDisplay();
+    }
+
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const gamma = canvasToGamma(x, y);
+      const gammaAbs = Math.hypot(gamma.real, gamma.imag);
+
+      if (gammaAbs <= 1) {
+        const z = gammaToZ(gamma);
+        currentR = Math.max(0, z.r);
+        currentX = z.x;
+
+        document.getElementById("resistance").value = currentR.toFixed(3);
+        document.getElementById("reactance").value = currentX.toFixed(3);
+
+        updateDisplay();
+      }
+    });
+
+    document.getElementById("resistance").addEventListener("input", (e) => {
+      currentR = Math.max(0, parseFloat(e.target.value) || 0);
+      updateDisplay();
+    });
+
+    document.getElementById("reactance").addEventListener("input", (e) => {
+      currentX = parseFloat(e.target.value) || 0;
+      updateDisplay();
+    });
+
+    window.addEventListener("resize", resizeCanvas);
+
+    resizeCanvas();
+  </script>
+</body>
+</html>

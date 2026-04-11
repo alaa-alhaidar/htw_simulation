@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRC-Check – Interaktive Simulation</title>
+  <link rel="stylesheet" href="uni-style.css" />
+  <style>
+    .sim-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 260px 1.1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .result-box {
+      min-height: 460px;
+      max-height: 460px;
+      overflow-y: auto;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .section-panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .step {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: white;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--primary);
+      border-radius: 10px;
+    }
+
+    .step-title {
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .step-content {
+      font-family: Consolas, monospace;
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 15px;
+      word-break: break-word;
+    }
+
+    .polynomial-display {
+      font-family: Consolas, monospace;
+      background: #fff;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin: 8px 0 0;
+      border: 1px solid var(--line);
+      font-size: 16px;
+      word-break: break-all;
+      font-weight: 600;
+    }
+
+    .transmission-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 460px;
+    }
+
+    .transmission {
+      width: 100%;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      box-shadow: var(--shadow);
+    }
+
+    .transmission h3 {
+      margin: 0 0 12px;
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .transmission p {
+      margin: 8px 0;
+      word-break: break-all;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .status-success {
+      background: #edf8f1;
+      border-color: #b9dec5;
+    }
+
+    .status-error {
+      background: #fceeee;
+      border-color: #e7c3c3;
+    }
+
+    .status-success h3 {
+      color: var(--success);
+    }
+
+    .status-error h3 {
+      color: var(--danger);
+    }
+
+    .info-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .info-item {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .info-item .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .info-item .value {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .highlight-success {
+      background: #1f7a4c;
+      color: white;
+      border-color: #1f7a4c;
+    }
+
+    @media (max-width: 1100px) {
+      .sim-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .transmission-box {
+        min-height: auto;
+      }
+
+      .result-box {
+        max-height: none;
+        min-height: 280px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-top">
+        <h1>CRC-Check – Interaktive Simulation</h1>
+        <p>
+          Visualisierung der CRC-Fehlererkennung mittels Polynomdivision über GF(2)
+          mit Darstellung von Sender, Übertragung und Empfänger.
+        </p>
+      </div>
+
+      <div class="header-meta">
+        <div class="meta-box">
+          <div class="label">Themengebiet</div>
+          <div class="value">Kanalcodierung / Fehlererkennung</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Lernziel</div>
+          <div class="value">Verstehen, wie CRC-Prüfsequenzen erzeugt und verifiziert werden</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Verfahren</div>
+          <div class="value">Polynomdivision und Restbildung über GF(2)</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Interaktion</div>
+          <div class="value">Nachricht eingeben, Generator wählen, Fehler simulieren</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="card" style="margin-bottom: 18px;">
+      <h2>Eingabe und Steuerung</h2>
+
+      <div class="control-grid">
+        <div class="field">
+          <label for="message">Nachricht (Bitfolge)</label>
+          <input type="text" id="message" value="1101011011" placeholder="z. B. 1101011011" />
+        </div>
+
+        <div class="field">
+          <label for="generator">Generatorpolynom G(x)</label>
+          <input type="text" id="generator" value="10011" placeholder="z. B. 10011" />
+          
+        </div>
+
+        <div class="field">
+          <label for="errorPos">Fehlerposition</label>
+          <input type="number" id="errorPos" value="-1" min="-1" placeholder="-1 = kein Fehler" />
+        </div>
+
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn-primary" onclick="startSimulation()">Simulation starten</button>
+        </div>
+      </div>
+
+      <div style="margin-top: 12px; max-width: 420px;">
+        <div class="field">
+          <label for="generatorSelect">Vordefinierte Generatorpolynome</label>
+          <select id="generatorSelect" onchange="setGenerator()">
+            <option value="">-- Vordefinierte Polynome --</option>
+            <option value="1011">CRC-3: x³ + x + 1 (1011)</option>
+            <option value="11010101">CRC-7: x⁷ + x⁶ + x⁴ + x² + 1 (11010101)</option>
+            <option value="100000111">CRC-8: x⁸ + x² + x + 1 (100000111)</option>
+            <option value="10001000000100001">CRC-16: x¹⁶ + x¹² + x⁵ + 1 (10001000000100001)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="info-strip">
+        <div class="info-item">
+          <div class="label">Prinzip</div>
+          <div class="value">An die Nachricht werden Prüfbits angehängt, die aus dem Divisionsrest entstehen.</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Empfängerprüfung</div>
+          <div class="value">Ist der Rest der erneuten Division gleich 0, wurde kein Fehler erkannt.</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Fehlersimulation</div>
+          <div class="value">Mit einer Bitposition ≥ 0 wird ein Bit in der Übertragung invertiert.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sim-grid">
+      <div class="section-panel">
+        <h2 class="section-title">Sender</h2>
+        <div id="senderResult" class="result-box">
+          <p>Bereit zum Senden ...</p>
+        </div>
+      </div>
+
+      <div class="transmission-box">
+        <div id="transmission" class="transmission" style="display: none;">
+          <h3>Übertragung</h3>
+        </div>
+      </div>
+
+      <div class="section-panel">
+        <h2 class="section-title">Empfänger</h2>
+        <div id="receiverResult" class="result-box">
+          <p>Wartet auf Übertragung ...</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      Diese Seite nutzt die gemeinsame Datei <strong>uni-style.css</strong> und ergänzt nur CRC-spezifische Layoutregeln.
+    </div>
+  </div>
+
+  <script>
+    function polynomialDivision(dividend, divisor) {
+      let steps = [];
+      let currentDividend = dividend.slice();
+
+      steps.push(`Start: ${currentDividend.join('')} ÷ ${divisor.join('')}`);
+
+      while (currentDividend.length >= divisor.length) {
+        while (currentDividend.length > 0 && currentDividend[0] === 0) {
+          currentDividend.shift();
+        }
+
+        if (currentDividend.length < divisor.length) break;
+
+        let temp = currentDividend.slice(0, divisor.length);
+        steps.push(`XOR: ${temp.join('')} ⊕ ${divisor.join('')}`);
+
+        for (let i = 0; i < divisor.length; i++) {
+          temp[i] = temp[i] ^ divisor[i];
+        }
+
+        for (let i = 0; i < divisor.length; i++) {
+          currentDividend[i] = temp[i];
+        }
+
+        steps.push(`Ergebnis: ${currentDividend.join('')}`);
+      }
+
+      while (currentDividend.length > 0 && currentDividend[0] === 0) {
+        currentDividend.shift();
+      }
+
+      return {
+        remainder: currentDividend,
+        steps: steps
+      };
+    }
+
+    function stringToBitArray(str) {
+      return str.split('').map(bit => parseInt(bit));
+    }
+
+    function bitArrayToString(arr) {
+      return arr.join('');
+    }
+
+    function calculateCRC(message, generator) {
+      const messageBits = stringToBitArray(message);
+      const generatorBits = stringToBitArray(generator);
+
+      const paddedMessage = [
+        ...messageBits,
+        ...new Array(generatorBits.length - 1).fill(0)
+      ];
+
+      const division = polynomialDivision(paddedMessage, generatorBits);
+
+      let crc = division.remainder;
+      while (crc.length < generatorBits.length - 1) {
+        crc.unshift(0);
+      }
+
+      return {
+        crc: crc,
+        steps: division.steps,
+        paddedMessage: paddedMessage
+      };
+    }
+
+    function verifyCRC(receivedMessage, generator) {
+      const receivedBits = stringToBitArray(receivedMessage);
+      const generatorBits = stringToBitArray(generator);
+
+      const division = polynomialDivision(receivedBits, generatorBits);
+
+      const isValid =
+        division.remainder.length === 0 ||
+        division.remainder.every(bit => bit === 0);
+
+      return {
+        isValid: isValid,
+        remainder: division.remainder,
+        steps: division.steps
+      };
+    }
+
+    function introduceError(message, position) {
+      if (position < 0 || position >= message.length) return message;
+
+      const bits = stringToBitArray(message);
+      bits[position] = bits[position] ^ 1;
+      return bitArrayToString(bits);
+    }
+
+    function setGenerator() {
+      const select = document.getElementById('generatorSelect');
+      const input = document.getElementById('generator');
+      if (select.value) {
+        input.value = select.value;
+      }
+    }
+
+    function startSimulation() {
+      const message = document.getElementById('message').value.trim();
+      const generator = document.getElementById('generator').value.trim();
+      const errorPos = parseInt(document.getElementById('errorPos').value);
+
+      if (!/^[01]+$/.test(message)) {
+        alert('Bitte geben Sie eine gültige Bitfolge ein (nur 0 und 1).');
+        return;
+      }
+
+      if (!/^[01]+$/.test(generator) || generator.length < 2) {
+        alert('Bitte geben Sie ein gültiges Generatorpolynom ein (mindestens 2 Bits, nur 0 und 1).');
+        return;
+      }
+
+      const senderContainer = document.getElementById('senderResult');
+      const receiverContainer = document.getElementById('receiverResult');
+      const transmissionDiv = document.getElementById('transmission');
+
+      senderContainer.innerHTML = '<div class="step"><div class="step-title">Status</div><div class="step-content">CRC-Berechnung läuft ...</div></div>';
+      receiverContainer.innerHTML = '<p>Wartet auf Daten vom Sender ...</p>';
+      transmissionDiv.style.display = 'none';
+
+      setTimeout(() => {
+        const crcResult = calculateCRC(message, generator);
+        const crcString = bitArrayToString(crcResult.crc);
+        const transmittedMessage = message + crcString;
+
+        senderContainer.innerHTML = `
+          <div class="step">
+            <div class="step-title">1. Original-Nachricht</div>
+            <div class="polynomial-display">${message}</div>
+          </div>
+
+          <div class="step">
+            <div class="step-title">2. Generatorpolynom G(x)</div>
+            <div class="polynomial-display">${generator}</div>
+          </div>
+
+          <div class="step">
+            <div class="step-title">3. Nachricht mit angehängten Nullen</div>
+            <div class="polynomial-display">${bitArrayToString(crcResult.paddedMessage)}</div>
+          </div>
+
+          <div class="step">
+            <div class="step-title">4. CRC-Prüfsumme (Rest)</div>
+            <div class="polynomial-display">${crcString}</div>
+          </div>
+
+          <div class="step">
+            <div class="step-title">5. Zu sendende Nachricht</div>
+            <div class="polynomial-display highlight-success">${transmittedMessage}</div>
+          </div>
+        `;
+
+        let finalMessage = transmittedMessage;
+
+        if (errorPos >= 0 && errorPos < transmittedMessage.length) {
+          finalMessage = introduceError(transmittedMessage, errorPos);
+          transmissionDiv.innerHTML = `
+            <div class="transmission status-error">
+              <h3>Übertragung mit Fehler</h3>
+              <p><strong>Gesendet:</strong> ${transmittedMessage}</p>
+              <p><strong>Empfangen:</strong> ${finalMessage}</p>
+              <p><strong>Fehlerposition:</strong> ${errorPos}</p>
+            </div>
+          `;
+        } else {
+          transmissionDiv.innerHTML = `
+            <div class="transmission status-success">
+              <h3>Fehlerfreie Übertragung</h3>
+              <p><strong>Nachricht:</strong> ${finalMessage}</p>
+            </div>
+          `;
+        }
+
+        transmissionDiv.style.display = 'block';
+
+        setTimeout(() => {
+          receiverContainer.innerHTML = '<div class="step"><div class="step-title">Status</div><div class="step-content">CRC-Verifikation läuft ...</div></div>';
+
+          setTimeout(() => {
+            const verificationResult = verifyCRC(finalMessage, generator);
+
+            receiverContainer.innerHTML = `
+              <div class="step">
+                <div class="step-title">1. Empfangene Nachricht</div>
+                <div class="polynomial-display">${finalMessage}</div>
+              </div>
+
+              <div class="step">
+                <div class="step-title">2. Division durch G(x)</div>
+                <div class="polynomial-display">${generator}</div>
+              </div>
+
+              <div class="step">
+                <div class="step-title">3. Rest der Division</div>
+                <div class="polynomial-display">${bitArrayToString(verificationResult.remainder) || '0'}</div>
+              </div>
+
+              <div class="step ${verificationResult.isValid ? 'status-success' : 'status-error'}">
+                <div class="step-title">4. Ergebnis</div>
+                <div class="step-content">
+                  ${
+                    verificationResult.isValid
+                      ? '✅ Keine Fehler erkannt (Rest = 0)'
+                      : '❌ Fehler erkannt (Rest ≠ 0)'
+                  }
+                </div>
+              </div>
+            `;
+          }, 700);
+        }, 700);
+      }, 400);
+    }
+
+    window.onload = function () {
+      startSimulation();
+    };
+  </script>
+</body>
+</html>

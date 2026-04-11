@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faltungsencoder – Interaktive Simulation</title>
+  <link rel="stylesheet" href="uni-style.css">
+  <style>
+  .register-cell {
+    width: 74px;
+    height: 74px;
+  }
+</style>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-2: #eef2f7;
+      --text: #1f2937;
+      --muted: #5f6b7a;
+      --line: #d7dde7;
+      --primary: #0f4c81;
+      --primary-2: #1f6aa5;
+      --accent: #7a1f1f;
+      --success: #1f7a4c;
+      --warn: #8a6a12;
+      --shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    .page {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+
+    .header {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .header-top {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      padding: 22px 26px;
+    }
+
+    .header-top h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .header-top p {
+      margin: 0;
+      max-width: 980px;
+      line-height: 1.6;
+      font-size: 16px;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .header-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      padding: 18px 22px;
+      background: var(--surface);
+    }
+
+    .meta-box {
+      padding: 12px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .meta-box .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .meta-box .value {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .top-grid,
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      color: var(--primary);
+      line-height: 1.3;
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      color: var(--primary);
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .encoder-diagram {
+      text-align: center;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .shift-register {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .register-cell {
+      width: 74px;
+      height: 74px;
+      border: 2px solid #b8c5d8;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 30px;
+      border-radius: 12px;
+      color: var(--primary);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+
+    .formula-box {
+      margin-top: 14px;
+      padding: 14px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 24px;
+      line-height: 1.7;
+    }
+
+    .formula-order {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .current-step {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .control-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      font-size: 20px;
+      font-family: Consolas, monospace;
+      color: var(--text);
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.12);
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      transition: 0.18s ease;
+      min-height: 46px;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-2);
+    }
+
+    .btn-green {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-green:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-red {
+      background: #b42318;
+      color: white;
+    }
+
+    .btn-red:hover {
+      filter: brightness(1.05);
+    }
+
+    .step-info {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .output-display {
+      font-family: Consolas, monospace;
+      font-size: 28px;
+      background: var(--surface-2);
+      border: 2px solid #c7d4e4;
+      border-radius: 12px;
+      padding: 24px;
+      min-height: 110px;
+      word-break: break-word;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 620px;
+      font-size: 16px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 10px;
+      text-align: center;
+    }
+
+    th {
+      background: var(--surface-2);
+      color: var(--primary);
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .current-row {
+      background: #fff7df;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+    }
+
+    @media (max-width: 840px) {
+      .input-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 16px 14px 28px;
+      }
+
+      .header-top h1 {
+        font-size: 28px;
+      }
+
+      .register-cell {
+        width: 62px;
+        height: 62px;
+        font-size: 26px;
+      }
+
+      .formula-box {
+        font-size: 20px;
+      }
+
+      .output-display {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-top">
+        <h1>Faltungsencoder – Interaktive Simulation</h1>
+        <p>
+          Visualisierung eines Faltungsencoders vom Typ (2,1,2) mit Schieberegister,
+          Generatorbeziehungen und schrittweiser Codierung einer Binärfolge.
+        </p>
+      </div>
+
+      <div class="header-meta">
+        <div class="meta-box">
+          <div class="label">Themengebiet</div>
+          <div class="value">Kanalcodierung / Nachrichtentechnik</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Lernziel</div>
+          <div class="value">Nachvollziehen, wie aus Eingangsbits codierte Ausgabebits entstehen</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Encoder</div>
+          <div class="value">(2,1,2)-Faltungsencoder mit Rate R = 1/2</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Interaktion</div>
+          <div class="value">Bitfolge laden, Schrittbetrieb, Gesamtlauf und Reset</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="top-grid">
+      <div class="card">
+        <h2>Schieberegister und Generatorbeziehungen</h2>
+        <div class="encoder-diagram">
+          <h3>Registerzustand</h3>
+
+          <div class="shift-register">
+            <span>u₁ →</span>
+            <div class="register-cell" id="reg0">0</div>
+            <div class="register-cell" id="reg1">0</div>
+            <div class="register-cell" id="reg2">0</div>
+          </div>
+
+          <div class="formula-order">Order: [u₁, u₁₋₁, u₁₋₂]</div>
+
+          <div class="formula-box">
+            <div>
+              x⁽¹⁾ = u₁ ⊕ u₁₋₁ ⊕ u₁₋₂ =
+              <span id="output1" class="current-step">0</span>
+            </div>
+            <div>
+              x⁽²⁾ = u₁ ⊕ u₁₋₂ =
+              <span id="output2" class="current-step">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="small-note">
+          Das Register zeigt den aktuellen Zustand des Encoders. Die beiden Ausgänge
+          werden aus den definierten XOR-Verknüpfungen berechnet.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Steuerung</h2>
+        <div class="control-panel">
+          <div class="field">
+            <label for="inputBits">Eingabefolge (nur 0 und 1)</label>
+            <div class="input-row">
+              <input type="text" id="inputBits" value="1011" />
+              <button class="btn-primary" onclick="loadSequence()">Laden</button>
+              <button class="btn-primary" onclick="generateRandom()">Random</button>
+            </div>
+          </div>
+
+          <div class="step-info">
+            <div><strong>Schritt:</strong> <span id="currentStep">Bereit</span></div>
+            <div><strong>Aktuelles Bit:</strong> <span id="currentBit">-</span></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn-green" onclick="stepForward()" id="stepBtn">Schritt ausführen</button>
+            <button class="btn-primary" onclick="runAll()">Alle Schritte</button>
+            <button class="btn-red" onclick="reset()">Reset</button>
+          </div>
+
+          <div class="small-note">
+            Die Eingabefolge wird Bit für Bit verarbeitet. Bei jedem Schritt wird das Register
+            aktualisiert und die codierte Zweibit-Ausgabe erzeugt.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <div class="card">
+        <h2>Kodierte Ausgabe</h2>
+        <div class="output-display" id="encodedOutput"></div>
+        <div class="small-note">
+          Hier wird die resultierende Ausgabefolge in der Reihenfolge der Verarbeitung dargestellt.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Kodiertabelle</h2>
+        <div class="table-wrap">
+          <table id="codingTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>u₁</th>
+                <th>Register</th>
+                <th>x⁽¹⁾</th>
+                <th>x⁽²⁾</th>
+                <th>Out [x⁽¹⁾, x⁽²⁾]</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      Diese Seite verwendet denselben sachlichen Stil wie die zentrale Startseite, damit alle
+      Simulationen als zusammengehörige Lehrumgebung erscheinen.
+    </div>
+  </div>
+
+  <script>
+    class ConvolutionalEncoder {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.register = [0, 0, 0];
+        this.inputSequence = [];
+        this.currentStep = 0;
+        this.outputSequence = [];
+        this.tableData = [];
+      }
+
+      loadSequence(bits) {
+        this.reset();
+        this.inputSequence = bits.split('').map(b => parseInt(b)).filter(b => b === 0 || b === 1);
+        this.updateDisplay();
+      }
+
+      step() {
+        if (this.currentStep >= this.inputSequence.length) return false;
+
+        const inputBit = this.inputSequence[this.currentStep];
+        this.register = [this.register[1], this.register[2], inputBit];
+
+        const output1 = this.register[2] ^ this.register[1] ^ this.register[0];
+        const output2 = this.register[2] ^ this.register[0];
+
+        this.tableData.push({
+          step: this.currentStep + 1,
+          input: inputBit,
+          register: [...this.register],
+          output1: output1,
+          output2: output2
+        });
+
+        this.outputSequence.push(output1.toString() + output2.toString());
+        this.currentStep++;
+        this.updateDisplay();
+        return true;
+      }
+
+      runAll() {
+        while (this.step()) {}
+      }
+
+      updateDisplay() {
+        document.getElementById('reg0').textContent = this.register[2];
+        document.getElementById('reg1').textContent = this.register[1];
+        document.getElementById('reg2').textContent = this.register[0];
+
+        const output1 = this.register[2] ^ this.register[1] ^ this.register[0];
+        const output2 = this.register[2] ^ this.register[0];
+
+        document.getElementById('output1').textContent = output1;
+        document.getElementById('output2').textContent = output2;
+
+        if (this.currentStep < this.inputSequence.length) {
+          document.getElementById('currentStep').textContent = `${this.currentStep + 1}/${this.inputSequence.length}`;
+          document.getElementById('currentBit').textContent = this.inputSequence[this.currentStep];
+        } else if (this.inputSequence.length > 0) {
+          document.getElementById('currentStep').textContent = 'Fertig';
+          document.getElementById('currentBit').textContent = '-';
+        } else {
+          document.getElementById('currentStep').textContent = 'Bereit';
+          document.getElementById('currentBit').textContent = '-';
+        }
+
+        document.getElementById('encodedOutput').textContent =
+          this.outputSequence.length > 0 ? this.outputSequence.join(' ') : '';
+
+        document.getElementById('stepBtn').disabled =
+          this.currentStep >= this.inputSequence.length;
+
+        this.updateTable();
+      }
+
+      updateTable() {
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = '';
+
+        this.tableData.forEach((row, index) => {
+          const tr = document.createElement('tr');
+          if (index === this.tableData.length - 1) {
+            tr.classList.add('current-row');
+          }
+
+          tr.innerHTML = `
+            <td>${row.step}</td>
+            <td>${row.input}</td>
+            <td>[${[row.register[2], row.register[1], row.register[0]].join(', ')}]</td>
+            <td>${row.output1}</td>
+            <td>${row.output2}</td>
+            <td>${row.output1}${row.output2}</td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+    }
+
+    const encoder = new ConvolutionalEncoder();
+
+    function loadSequence() {
+      const input = document.getElementById('inputBits').value.trim();
+      if (!/^[01]+$/.test(input)) {
+        alert('Nur 0 und 1 erlaubt.');
+        return;
+      }
+      encoder.loadSequence(input);
+    }
+
+    function generateRandom() {
+      const length = Math.floor(Math.random() * 6) + 4;
+      let randomBits = '';
+      for (let i = 0; i < length; i++) {
+        randomBits += Math.random() < 0.5 ? '0' : '1';
+      }
+      document.getElementById('inputBits').value = randomBits;
+      encoder.loadSequence(randomBits);
+    }
+
+    function stepForward() {
+      encoder.step();
+    }
+
+    function runAll() {
+      encoder.runAll();
+    }
+
+    function reset() {
+      encoder.reset();
+      encoder.updateDisplay();
+    }
+
+    loadSequence();
+  </script>
+</body>
+</html>

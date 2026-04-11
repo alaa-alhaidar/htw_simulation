@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interaktives Smith-Diagramm</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --panel: rgba(255,255,255,0.95);
+      --text: #1f2937;
+      --muted: #64748b;
+      --blue: #3b82f6;
+      --green: #10b981;
+      --orange: #f59e0b;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --shadow: 0 14px 36px rgba(0,0,0,0.18);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,0.18), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(139,92,246,0.12), transparent 32%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      padding: 8px;
+    }
+
+    .app {
+      max-width: 1460px;
+      margin: 0 auto;
+    }
+
+    .container {
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    .header {
+      padding: 16px 20px 8px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.6));
+      border-bottom: 1px solid rgba(148,163,184,0.16);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2vw, 1.9rem);
+      line-height: 1.1;
+      color: #1e3a8a;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 460px;
+      gap: 16px;
+      padding: 16px;
+      align-items: start;
+    }
+
+    .chart-panel {
+      background: linear-gradient(180deg, #ffffff, #f8fafc);
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .canvas-wrap {
+      width: 100%;
+      max-width: min(84vw, 900px);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at center, rgba(59,130,246,0.035), transparent 58%),
+        linear-gradient(180deg, #ffffff, #f8fafc);
+      border: 1px solid rgba(148,163,184,0.22);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    .legend {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      color: #334155;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(203,213,225,0.8);
+      border-radius: 10px;
+      padding: 9px 11px;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #ffffff, #f8fafc);
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 6px 16px rgba(15,23,42,0.05);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 1.02rem;
+      color: #334155;
+    }
+
+    .instruction {
+      background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.06));
+      border: 1px solid rgba(59,130,246,0.16);
+      color: #1e3a8a;
+      font-size: 0.94rem;
+    }
+
+    .control-group {
+      margin-bottom: 12px;
+    }
+
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      color: #334155;
+      font-size: 0.96rem;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #0f172a;
+      border-radius: 10px;
+      padding: 11px 13px;
+      font-size: 1.05rem;
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(203,213,225,0.84);
+    }
+
+    .metric-label {
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #0f172a;
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      word-break: normal;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(203,213,225,0.9);
+      font-size: 0.84rem;
+      color: #334155;
+    }
+
+    @media (max-width: 1100px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      .canvas-wrap {
+        max-width: min(92vw, 760px);
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 6px; }
+      .header { padding: 14px 14px 8px; }
+      .content { padding: 10px; gap: 10px; }
+      .chart-panel, .card { padding: 10px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .canvas-wrap { max-width: 100%; }
+      .metric-value { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="container">
+      <div class="header">
+        <h1>📐 Interaktives Smith-Diagramm</h1>
+        <p class="subtitle">
+          Hervorgehobener r-Kreis und x-Bogen passend zur Eingabe • Z₀ = 50 Ω
+        </p>
+      </div>
+
+      <div class="content">
+        <div class="chart-panel">
+          <div class="canvas-wrap">
+            <canvas id="smithChart"></canvas>
+          </div>
+
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--blue);"></div>
+              <span>r-Kreise</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--green);"></div>
+              <span>x-Bögen</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--orange);"></div>
+              <span>SWR</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--red);"></div>
+              <span>Last</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: var(--purple);"></div>
+              <span>Konjugiert</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="card instruction">
+            <strong>Hinweis:</strong> Klicke ins Diagramm oder ändere R/X. Der passende Widerstandskreis und Reaktanzbogen werden farblich hervorgehoben.
+          </div>
+
+          <div class="card">
+            <h3>🔧 Eingabe</h3>
+            <div class="control-group">
+              <label for="resistance">R (Ω)</label>
+              <input type="number" id="resistance" value="100" step="1" />
+            </div>
+
+            <div class="control-group">
+              <label for="reactance">X (Ω)</label>
+              <input type="number" id="reactance" value="50" step="1" />
+            </div>
+
+            <div class="pill-row">
+              <div class="pill">Z₀ = 50 Ω</div>
+              <div class="pill">Y₀ = 0.02 S</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>📊 Impedanz / Reflexion</h3>
+            <div class="grid-2">
+              <div class="metric">
+                <div class="metric-label">Impedanz</div>
+                <div class="metric-value" id="impedance">-</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Normierte z</div>
+                <div class="metric-value" id="normalizedZ">-</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Γ</div>
+                <div class="metric-value" id="gamma">-</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">SWR</div>
+                <div class="metric-value" id="swr">-</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Reflektierte Leistung</div>
+                <div class="metric-value" id="reflectedPower">-</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Konjugiert</div>
+                <div class="metric-value" id="conjugateMatch">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>🎯 Admittanz</h3>
+            <div class="grid-2">
+              <div class="metric">
+                <div class="metric-label">Y</div>
+                <div class="metric-value" id="admittance">-</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Normierte y</div>
+                <div class="metric-value" id="normalizedY">-</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Nötige ΔY</div>
+                <div class="metric-value" id="neededAdmittance">-</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Normierte Δy</div>
+                <div class="metric-value" id="neededNormalizedY">-</div>
+              </div>
+            </div>
+            <div class="small-note">
+              ΔY = Y₀ − Y<sub>Last</sub>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("smithChart");
+    const ctx = canvas.getContext("2d");
+
+    const Z0 = 50;
+    const Y0 = 1 / Z0;
+
+    let currentR = 100;
+    let currentX = 50;
+
+    let centerX = 0;
+    let centerY = 0;
+    let radius = 0;
+
+    function zToGamma(r, x) {
+      const zr = r / Z0;
+      const zx = x / Z0;
+      const denom = (zr + 1) * (zr + 1) + zx * zx;
+
+      return {
+        real: (zr * zr + zx * zx - 1) / denom,
+        imag: (2 * zx) / denom
+      };
+    }
+
+    function gammaToZ(gamma) {
+      const gr = gamma.real;
+      const gi = gamma.imag;
+      const denom = (1 - gr) * (1 - gr) + gi * gi;
+
+      return {
+        r: Z0 * (1 - gr * gr - gi * gi) / denom,
+        x: Z0 * (2 * gi) / denom
+      };
+    }
+
+    function gammaToCanvas(gamma) {
+      return {
+        x: centerX + gamma.real * radius,
+        y: centerY - gamma.imag * radius
+      };
+    }
+
+    function canvasToGamma(x, y) {
+      return {
+        real: (x - centerX) / radius,
+        imag: -(y - centerY) / radius
+      };
+    }
+
+    function impedanceToAdmittance(r, x) {
+      const denom = r * r + x * x;
+      return {
+        g: r / denom,
+        b: -x / denom
+      };
+    }
+
+    function drawLabel(text, x, y, color, align = "left", sizeFactor = 0.04) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.font = `700 ${Math.max(11, radius * sizeFactor)}px Inter, Arial`;
+      ctx.textAlign = align;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    }
+
+    function drawOuterCircle() {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.strokeStyle = "#0f172a";
+      ctx.lineWidth = Math.max(2, radius * 0.008);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(centerX - radius, centerY);
+      ctx.lineTo(centerX + radius, centerY);
+      ctx.strokeStyle = "rgba(15,23,42,0.28)";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawResistanceCircles() {
+      const rMajor = [0, 0.2, 0.5, 1, 2, 5];
+      const rMinor = [0.1, 0.3, 0.7, 1.5, 3, 10];
+
+      ctx.save();
+
+      rMinor.forEach(r => {
+        const cx = centerX + radius * (r / (1 + r));
+        const cr = radius / (1 + r);
+        ctx.beginPath();
+        ctx.arc(cx, centerY, cr, 0, 2 * Math.PI);
+        ctx.strokeStyle = "rgba(59,130,246,0.12)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      rMajor.forEach(r => {
+        const cx = centerX + radius * (r / (1 + r));
+        const cr = radius / (1 + r);
+
+        ctx.beginPath();
+        ctx.arc(cx, centerY, cr, 0, 2 * Math.PI);
+        ctx.strokeStyle = "rgba(59,130,246,0.42)";
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        const labelX = cx;
+        const labelY = centerY - cr - 8;
+        drawLabel(`R=${(r * Z0).toFixed(0)}Ω`, labelX, labelY, "#2563eb", "center", 0.038);
+        drawLabel(`r=${r}`, cx, centerY - cr + 16, "rgba(37,99,235,0.9)", "center", 0.03);
+      });
+
+      ctx.restore();
+    }
+
+    function drawReactanceArcs() {
+      const xMajor = [0.1, 0.2, 0.3, 0.5, 1, 2, 3, 5, 10];
+      const xMinor = [0.15, 0.25, 0.4, 0.7, 1.5, 4, 7];
+
+      ctx.save();
+
+      function drawArcSet(values, alpha, lineWidth) {
+        values.forEach(x => {
+          const cX = centerX + radius;
+          const rArc = radius / x;
+
+          const cYPos = centerY - radius / x;
+          const cYNeg = centerY + radius / x;
+
+          ctx.beginPath();
+          ctx.arc(cX, cYPos, rArc, Math.PI / 2, Math.PI);
+          ctx.strokeStyle = `rgba(16,185,129,${alpha})`;
+          ctx.lineWidth = lineWidth;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(cX, cYNeg, rArc, Math.PI, 1.5 * Math.PI);
+          ctx.strokeStyle = `rgba(16,185,129,${alpha})`;
+          ctx.lineWidth = lineWidth;
+          ctx.stroke();
+        });
+      }
+
+      drawArcSet(xMinor, 0.10, 0.85);
+      drawArcSet(xMajor, 0.35, 1.0);
+
+      xMajor.forEach(x => {
+        const gy = zToGamma(Z0, x * Z0);
+        const py = zToGamma(Z0, -x * Z0);
+        const p1 = gammaToCanvas(gy);
+        const p2 = gammaToCanvas(py);
+
+        drawLabel(`+j${x}`, p1.x + 7, p1.y - 3, "#059669", "left", 0.032);
+        drawLabel(`-j${x}`, p2.x + 7, p2.y + 14, "#059669", "left", 0.032);
+      });
+
+      ctx.restore();
+    }
+
+    function drawHighlightedResistanceCircle() {
+      const r = currentR / Z0;
+      if (r < 0) return;
+
+      const cx = centerX + radius * (r / (1 + r));
+      const cr = radius / (1 + r);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, centerY, cr, 0, 2 * Math.PI);
+      ctx.strokeStyle = "#0057ff";
+      ctx.lineWidth = Math.max(3, radius * 0.008);
+      ctx.shadowColor = "rgba(0, 87, 255, 0.35)";
+      ctx.shadowBlur = 10;
+      ctx.stroke();
+
+      drawLabel(`aktuell: r=${r.toFixed(3)}`, cx, centerY - cr - 22, "#0057ff", "center", 0.04);
+      ctx.restore();
+    }
+
+    function drawHighlightedReactanceArc() {
+      const x = currentX / Z0;
+      if (Math.abs(x) < 1e-9) return;
+
+      const cX = centerX + radius;
+      const rArc = radius / Math.abs(x);
+      const cY = x > 0
+        ? centerY - radius / Math.abs(x)
+        : centerY + radius / Math.abs(x);
+
+      ctx.save();
+      ctx.beginPath();
+
+      if (x > 0) {
+        ctx.arc(cX, cY, rArc, Math.PI / 2, Math.PI);
+      } else {
+        ctx.arc(cX, cY, rArc, Math.PI, 1.5 * Math.PI);
+      }
+
+      ctx.strokeStyle = "#00a86b";
+      ctx.lineWidth = Math.max(3, radius * 0.008);
+      ctx.shadowColor = "rgba(0, 168, 107, 0.35)";
+      ctx.shadowBlur = 10;
+      ctx.stroke();
+
+      const gammaPoint = zToGamma(currentR, currentX);
+      const p = gammaToCanvas(gammaPoint);
+
+      drawLabel(
+        `aktuell: ${x >= 0 ? "+" : "-"}j${Math.abs(x).toFixed(3)}`,
+        p.x + 14,
+        p.y + (x >= 0 ? -12 : 18),
+        "#00a86b",
+        "left",
+        0.036
+      );
+
+      ctx.restore();
+    }
+
+    function drawSWRRings() {
+      const swrValues = [1.2, 1.5, 2, 3, 5];
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+
+      swrValues.forEach((swr, idx) => {
+        const gammaAbs = (swr - 1) / (swr + 1);
+        const rr = radius * gammaAbs;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, rr, 0, 2 * Math.PI);
+        ctx.strokeStyle = idx < 2 ? "rgba(245,158,11,0.2)" : "rgba(245,158,11,0.35)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function drawReferencePoints() {
+      ctx.save();
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, Math.max(4, radius * 0.015), 0, 2 * Math.PI);
+      ctx.fillStyle = "#10b981";
+      ctx.fill();
+
+      drawLabel("Z₀", centerX - 12, centerY + 22, "#0f172a", "left", 0.04);
+      drawLabel("0", centerX - radius - 10, centerY + 5, "#0f172a", "right", 0.04);
+      drawLabel("∞", centerX + radius + 10, centerY + 5, "#0f172a", "left", 0.04);
+
+      ctx.restore();
+    }
+
+    function drawCurrentPoint() {
+      const gamma = zToGamma(currentR, currentX);
+      const p = gammaToCanvas(gamma);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = "rgba(239,68,68,0.25)";
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(6, radius * 0.024), 0, 2 * Math.PI);
+      ctx.fillStyle = "#ef4444";
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+      ctx.restore();
+
+      const conjugateGamma = { real: gamma.real, imag: -gamma.imag };
+      const cp = gammaToCanvas(conjugateGamma);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cp.x, cp.y, Math.max(4.5, radius * 0.018), 0, 2 * Math.PI);
+      ctx.fillStyle = "#8b5cf6";
+      ctx.fill();
+      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawSmithChart() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawOuterCircle();
+      drawSWRRings();
+      drawResistanceCircles();
+      drawReactanceArcs();
+      drawHighlightedResistanceCircle();
+      drawHighlightedReactanceArc();
+      drawReferencePoints();
+      drawCurrentPoint();
+    }
+
+    function updateDisplay() {
+      const gamma = zToGamma(currentR, currentX);
+      const gammaAbs = Math.hypot(gamma.real, gamma.imag);
+      const gammaPhase = Math.atan2(gamma.imag, gamma.real) * 180 / Math.PI;
+      const swr = gammaAbs < 0.999999 ? (1 + gammaAbs) / (1 - gammaAbs) : Infinity;
+      const reflectedPower = gammaAbs * gammaAbs * 100;
+
+      const zNormR = currentR / Z0;
+      const zNormX = currentX / Z0;
+
+      const y = impedanceToAdmittance(currentR, currentX);
+      const yNorm = { g: y.g / Y0, b: y.b / Y0 };
+
+      const neededY = {
+        g: Y0 - y.g,
+        b: -y.b
+      };
+
+      const neededYNorm = {
+        g: neededY.g / Y0,
+        b: neededY.b / Y0
+      };
+
+      document.getElementById("impedance").textContent =
+        `${currentR.toFixed(3)} ${currentX >= 0 ? "+" : "-"}j${Math.abs(currentX).toFixed(3)} Ω`;
+
+      document.getElementById("normalizedZ").textContent =
+        `${zNormR.toFixed(3)} ${zNormX >= 0 ? "+" : "-"}j${Math.abs(zNormX).toFixed(3)}`;
+
+      document.getElementById("gamma").textContent =
+        `${gammaAbs.toFixed(4)} ∠ ${gammaPhase.toFixed(1)}°`;
+
+      document.getElementById("swr").textContent =
+        Number.isFinite(swr) ? swr.toFixed(3) : "∞";
+
+      document.getElementById("reflectedPower").textContent =
+        `${reflectedPower.toFixed(2)} %`;
+
+      document.getElementById("conjugateMatch").textContent =
+        `${currentR.toFixed(3)} ${-currentX >= 0 ? "+" : "-"}j${Math.abs(currentX).toFixed(3)} Ω`;
+
+      document.getElementById("admittance").textContent =
+        `${y.g.toFixed(5)} ${y.b >= 0 ? "+" : "-"}j${Math.abs(y.b).toFixed(5)} S`;
+
+      document.getElementById("normalizedY").textContent =
+        `${yNorm.g.toFixed(3)} ${yNorm.b >= 0 ? "+" : "-"}j${Math.abs(yNorm.b).toFixed(3)}`;
+
+      document.getElementById("neededAdmittance").textContent =
+        `${neededY.g.toFixed(5)} ${neededY.b >= 0 ? "+" : "-"}j${Math.abs(neededY.b).toFixed(5)} S`;
+
+      document.getElementById("neededNormalizedY").textContent =
+        `${neededYNorm.g.toFixed(3)} ${neededYNorm.b >= 0 ? "+" : "-"}j${Math.abs(neededYNorm.b).toFixed(3)}`;
+
+      drawSmithChart();
+    }
+
+    function resizeCanvas() {
+      const wrap = canvas.parentElement;
+      const size = Math.floor(wrap.clientWidth);
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.floor(size * dpr);
+      canvas.height = Math.floor(size * dpr);
+      canvas.style.width = `${size}px`;
+      canvas.style.height = `${size}px`;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      centerX = size / 2;
+      centerY = size / 2;
+      radius = size * 0.42;
+
+      updateDisplay();
+    }
+
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const gamma = canvasToGamma(x, y);
+      const gammaAbs = Math.hypot(gamma.real, gamma.imag);
+
+      if (gammaAbs <= 1) {
+        const z = gammaToZ(gamma);
+        currentR = Math.max(0, z.r);
+        currentX = z.x;
+
+        document.getElementById("resistance").value = currentR.toFixed(3);
+        document.getElementById("reactance").value = currentX.toFixed(3);
+
+        updateDisplay();
+      }
+    });
+
+    document.getElementById("resistance").addEventListener("input", (e) => {
+      currentR = Math.max(0, parseFloat(e.target.value) || 0);
+      updateDisplay();
+    });
+
+    document.getElementById("reactance").addEventListener("input", (e) => {
+      currentX = parseFloat(e.target.value) || 0;
+      updateDisplay();
+    });
+
+    window.addEventListener("resize", resizeCanvas);
+
+    resizeCanvas();
+  </script>
+</body>
+</html>

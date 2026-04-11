@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interaktive Simulationen – Nachrichtentechnik</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-2: #eef2f7;
+      --text: #1f2937;
+      --muted: #5f6b7a;
+      --line: #d7dde7;
+      --primary: #0f4c81;
+      --primary-2: #1f6aa5;
+      --accent: #7a1f1f;
+      --shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .page {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+
+    .header {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .header-top {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      padding: 22px 26px;
+    }
+
+    .header-top h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .header-top p {
+      margin: 0;
+      max-width: 900px;
+      line-height: 1.6;
+      font-size: 16px;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .header-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      padding: 18px 22px;
+      background: var(--surface);
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .meta-box {
+      padding: 12px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .meta-box .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .meta-box .value {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+      margin-bottom: 22px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search {
+      flex: 1 1 320px;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .search input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.12);
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      min-height: 260px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #b8c5d8;
+      box-shadow: 0 12px 28px rgba(16, 24, 40, 0.12);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      background: #e8f0f8;
+      border: 1px solid #cddceb;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    .level {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      background: #f8ecec;
+      border: 1px solid #ead0d0;
+      padding: 6px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 23px;
+      line-height: 1.25;
+    }
+
+    .subtitle-small {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .info-item {
+      border-left: 4px solid var(--primary);
+      background: var(--surface-2);
+      padding: 10px 12px;
+      border-radius: 0 10px 10px 0;
+    }
+
+    .info-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .info-item span {
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .file-line {
+      margin-top: auto;
+      padding-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      text-decoration: none;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: 0.18s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: 1px solid var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-2);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--primary);
+      border: 1px solid #b9c7d8;
+    }
+
+    .btn-secondary:hover {
+      background: #f6f9fc;
+    }
+
+    .empty {
+      display: none;
+      text-align: center;
+      padding: 30px 16px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      margin-top: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .footer {
+      margin-top: 26px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 16px 14px 28px;
+      }
+
+      .header-top h1 {
+        font-size: 28px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-top">
+        <h1>Interaktive Simulationen – Nachrichtentechnik</h1>
+        <p>
+          Zentrale Startseite für Lehr- und Übungssimulationen aus den Bereichen
+          Kanalcodierung, Modulation, Leitungsanpassung, Smith-Diagramm und mathematische Grundlagen.
+        </p>
+      </div>
+
+      <div class="header-meta">
+        <div class="meta-box">
+          <div class="label">Verwendung</div>
+          <div class="value">Begleitmaterial für Vorlesung, Übung und Selbststudium</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Ziel</div>
+          <div class="value">Visualisierung zentraler Konzepte durch interaktive HTML-Simulationen</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Struktur</div>
+          <div class="value">Thematische Auswahl über Kategorien und Suchfeld</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Hinweis</div>
+          <div class="value">Alle HTML-Dateien sollten im gleichen Ordner wie diese Startseite liegen</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="toolbar">
+      <div class="toolbar-row">
+        <div class="search">
+          <input id="searchInput" type="text" placeholder="Simulation, Stichwort oder Themengebiet suchen ..." />
+        </div>
+
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">Alle</button>
+          <button class="filter-btn" data-filter="coding">Kanalcodierung</button>
+          <button class="filter-btn" data-filter="modulation">Modulation</button>
+          <button class="filter-btn" data-filter="rf">Leitungen / Smith</button>
+          <button class="filter-btn" data-filter="math">Grundlagen</button>
+        </div>
+      </div>
+    </section>
+
+    <h2 class="section-title">Verfügbare Simulationen</h2>
+
+    <section class="grid" id="simGrid">
+      <article class="card" data-category="coding" data-title="faltungsencoder convolutional encoder kanalcodierung schieberegister">
+        <div class="card-head">
+          <span class="tag">Kanalcodierung</span>
+          <span class="level">Basis</span>
+        </div>
+        <h3>Faltungsencoder</h3>
+        <div class="subtitle-small">
+          Interaktive Simulation eines Faltungsencoders mit Schieberegister und schrittweiser Bitverarbeitung.
+        </div>
+        <div class="info-list">
+          <div class="info-item">
+            <strong>Lernziel</strong>
+            <span>Nachvollziehen, wie Eingangsbits in codierte Ausgangsfolgen überführt werden.</span>
+          </div>
+          <div class="info-item">
+            <strong>Thema</strong>
+            <span>Kanalcodierung, Zustandsübergang, Registerinhalt, Generatorstruktur.</span>
+          </div>
+        </div>
+        <div class="file-line">Datei: convul.html</div>
+        <div class="actions">
+          <a class="btn-primary" href="convul.html">Simulation öffnen</a>
+          <a class="btn-secondary" href="convul.html" target="_blank">Im neuen Tab</a>
+        </div>
+      </article>
+
+      <article class="card" data-category="coding" data-title="crc check crc polynomdivision fehlererkennung">
+        <div class="card-head">
+          <span class="tag">Kanalcodierung</span>
+          <span class="level">Basis</span>
+        </div>
+        <h3>CRC-Check</h3>
+        <div class="subtitle-small">
+          Visualisierung der Fehlererkennung mittels Polynomdivision und Generatorpolynom.
+        </div>
+        <div class="info-list">
+          <div class="info-item">
+            <strong>Lernziel</strong>
+            <span>Verstehen, wie Prüfsequenzen erzeugt und empfangsseitig überprüft werden.</span>
+          </div>
+          <div class="info-item">
+            <strong>Thema</strong>
+            <span>CRC, Redundanz, Fehlererkennung, Sender-Empfänger-Prinzip.</span>
+          </div>
+        </div>
+        <div class="file-line">Datei: crc-simu.html</div>
+        <div class="actions">
+          <a class="btn-primary" href="crc-simu.html">Simulation öffnen</a>
+          <a class="btn-secondary" href="crc-simu.html" target="_blank">Im neuen Tab</a>
+        </div>
+      </article>
+
+      <article class="card" data-category="modulation" data-title="konstellationsdiagramm constellation qpsk qam bpsk modulation">
+        <div class="card-head">
+          <span class="tag">Modulation</span>
+          <span class="level">Mittel</span>
+        </div>
+        <h3>Konstellationsdiagramme</h3>
+        <div class="subtitle-small">
+          Vergleich idealer und verrauschter Symbolwolken für verschiedene Modulationsverfahren.
+        </div>
+        <div class="info-list">
+          <div class="info-item">
+            <strong>Lernziel</strong>
+            <span>Zusammenhang zwischen Signalraum, Symbolabstand und Rauschstörung untersuchen.</span>
+          </div>
+          <div class="info-item">
+            <strong>Thema</strong>
+            <span>BPSK, QPSK, PSK, QAM, SNR und Symbolverteilung.</span>
+          </div>
+        </div>
+        <div class="file-line">Datei: modulation.html</div>
+        <div class="actions">
+          <a class="btn-primary" href="modulation.html">Simulation öffnen</a>
+          <a class="btn-secondary" href="modulation.html" target="_blank">Im neuen Tab</a>
+        </div>
+      </article>
+
+      <article class="card" data-category="modulation" data-title="phasenmodulation bpsk phase modulation träger bitstrom">
+        <div class="card-head">
+          <span class="tag">Modulation</span>
+          <span class="level">Basis</span>
+        </div>
+        <h3>Phasenmodulation (BPSK)</h3>
+        <div class="subtitle-small">
+          Darstellung von Bitfolge, Trägersignal und phasenmoduliertem Ausgangssignal.
+        </div>
+        <div class="info-list">
+          <div class="info-item">
+            <strong>Lernziel</strong>
+            <span>Erkennen, wie Bits durch Phasensprünge auf ein Trägersignal abgebildet werden.</span>
+          </div>
+          <div class="info-item">
+            <strong>Thema</strong>
+            <span>Digitale Modulation, BPSK, Phasenlage, zeitlicher Signalverlauf.</span>
+          </div>
+        </div>
+        <div class="file-line">Datei: phase_modulation_input.html</div>
+        <div class="actions">
+          <a class="btn-primary" href="phase_modulation_input.html">Simulation öffnen</a>
+          <a class="btn-secondary" href="phase_modulation_input.html" target="_blank">Im neuen Tab</a>
+        </div>
+      </article>
+
+      <article class="card" data-category="rf" data-title="reflexionsfaktor impedance anpassung leitung vswr reflexion">
+        <div class="card-head">
+          <span class="tag">Leitungen / Smith</span>
+          <span class="level">Mittel</span>
+        </div>
+        <h3>Reflexionsfaktor und Leitungsanpassung</h3>
+        <div class="subtitle-small">
+          Berechnung und Visualisierung von Reflexion, VSWR, Leistungsübertragung und Lastanpassung.
+        </div>
+        <div class="info-list">
+          <div class="info-item">
+            <strong>Lernziel</strong>
+            <span>Einfluss von Lastimpedanz und Fehlanpassung auf Γ, Leistung und Stehwelle untersuchen.</span>
+          </div>
+          <div class="info-item">
+            <strong>Thema</strong>
+            <span>Reflexionsfaktor, Anpassung, Rückfluss, Stehwellenverhältnis.</span>
+          </div>
+        </div>
+        <div class="file-line">Datei: reflexion2.html</div>
+        <div class="actions">
+          <a class="btn-primary" href="reflexion2.html">Simulation öffnen</a>
+          <a class="btn-secondary" href="reflexion2.html" target="_blank">Im neuen Tab</a>
+        </div>
+      </article>
+
+      <article class="card" data-category="rf" data-title="smith diagramm smith chart anpassung impedanz admittanz">
+        <div class="card-head">
+          <span class="tag">Leitungen / Smith</span>
+          <span class="level">Fortgeschritten</span>
+        </div>
+        <h3>Smith-Diagramm</h3>
+        <div class="subtitle-small">
+          Interaktive Darstellung von Lastpunkt, Anpassungsweg sowie Impedanz- und Admittanzbezug.
+        </div>
+        <div class="info-list">
+          <div class="info-item">
+            <strong>Lernziel</strong>
+            <span>Grafische Anpassungsvorgänge im Smith-Chart nachvollziehen.</span>
+          </div>
+          <div class="info-item">
+            <strong>Thema</strong>
+            <span>Normierte Impedanz, Kreiszüge, Matching und Leitungsnetzwerke.</span>
+          </div>
+        </div>
+        <div class="file-line">Datei: smith.html</div>
+        <div class="actions">
+          <a class="btn-primary" href="smith.html">Simulation öffnen</a>
+          <a class="btn-secondary" href="smith.html" target="_blank">Im neuen Tab</a>
+        </div>
+      </article>
+
+      <article class="card" data-category="math" data-title="radiant winkel wellen mathematik grundlagen">
+        <div class="card-head">
+          <span class="tag">Grundlagen</span>
+          <span class="level">Basis</span>
+        </div>
+        <h3>Radiant, Winkel und Wellen</h3>
+        <div class="subtitle-small">
+          Veranschaulichung von Radiantmaß, Kreisbezug und Wellenausbreitung.
+        </div>
+        <div class="info-list">
+          <div class="info-item">
+            <strong>Lernziel</strong>
+            <span>Geometrische und wellentheoretische Grundlagen anschaulich wiederholen.</span>
+          </div>
+          <div class="info-item">
+            <strong>Thema</strong>
+            <span>Radiant, Winkelmaß, Wellenlänge, Phase, laufende Welle.</span>
+          </div>
+        </div>
+        <div class="file-line">Datei: winkel-rad.html</div>
+        <div class="actions">
+          <a class="btn-primary" href="winkel-rad.html">Simulation öffnen</a>
+          <a class="btn-secondary" href="winkel-rad.html" target="_blank">Im neuen Tab</a>
+        </div>
+      </article>
+    </section>
+
+    <div class="empty" id="emptyState">Keine passende Simulation gefunden.</div>
+
+    <footer class="footer">
+      Diese Startseite dient als zentrales Navigationsinterface. Neue Simulationen können durch
+      Hinzufügen weiterer Karten in derselben Struktur integriert werden. Für einen konsistenten
+      wissenschaftlichen Auftritt empfiehlt sich eine einheitliche Kopfzeile in allen Unterseiten.
+    </footer>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const cards = document.querySelectorAll(".card");
+    const emptyState = document.getElementById("emptyState");
+
+    let activeFilter = "all";
+
+    function updateView() {
+      const query = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+
+      cards.forEach(card => {
+        const category = card.dataset.category;
+        const haystack = card.dataset.title.toLowerCase();
+
+        const matchesFilter = activeFilter === "all" || category === activeFilter;
+        const matchesSearch = haystack.includes(query);
+
+        const show = matchesFilter && matchesSearch;
+        card.style.display = show ? "flex" : "none";
+
+        if (show) visible++;
+      });
+
+      emptyState.style.display = visible === 0 ? "block" : "none";
+    }
+
+    filterButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        filterButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        activeFilter = button.dataset.filter;
+        updateView();
+      });
+    });
+
+    searchInput.addEventListener("input", updateView);
+
+    updateView();
+  </script>
+</body>
+</html>
