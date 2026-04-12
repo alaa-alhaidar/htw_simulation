@@ -392,6 +392,35 @@
       padding: 18px 20px;
     }
 
+
+    .page-nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 14px 18px 18px;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+    }
+
+    .page-nav a {
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #fff;
+      border: 1px solid #b9c7d8;
+      transition: 0.18s ease;
+    }
+
+    .page-nav a:hover,
+    .page-nav a.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
     @media (max-width: 840px) {
       .input-row {
         grid-template-columns: 1fr;
@@ -456,6 +485,17 @@
           <div class="value">Bitfolge laden, Schrittbetrieb, Gesamtlauf und Reset</div>
         </div>
       </div>
+
+      <nav class="page-nav" aria-label="Seitennavigation">
+        <a href="index.html">Startseite</a>
+        <a href="convul.html" class="active" aria-current="page">Faltungsencoder</a>
+        <a href="crc-simu.html">CRC</a>
+        <a href="modulation.html">Modulation</a>
+        <a href="phase_modulation_input.html">BPSK</a>
+        <a href="reflexion2.html">Reflexion</a>
+        <a href="smith.html">Smith</a>
+        <a href="winkel-rad.html">Winkel / Radiant</a>
+      </nav>
     </header>
 
     <section class="top-grid">

@@ -31,7 +31,7 @@
     }
 
     .page {
-      max-width: 1500px;
+      max-width: 1380px;
       margin: 0 auto;
       padding: 28px 24px 40px;
     }
@@ -341,7 +341,42 @@
         grid-template-columns: 1fr;
       }
     }
-  </style>
+  
+    .page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 14px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .page-nav a {
+      text-decoration: none;
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      transition: 0.18s ease;
+    }
+
+    .page-nav a:hover {
+      background: #e8f0f8;
+      border-color: #cddceb;
+    }
+
+    .page-nav a.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+</style>
 </head>
 <body>
   <div class="page">
@@ -373,6 +408,18 @@
         </div>
       </div>
     </header>
+
+    <nav class="page-nav">
+      <a href="index.html" class="active">Startseite</a>
+      <a href="convul.html">Faltungsencoder</a>
+      <a href="crc-simu.html">CRC</a>
+      <a href="modulation.html">Modulation</a>
+      <a href="phase_modulation_input.html">BPSK</a>
+      <a href="reflexion2.html">Reflexion</a>
+      <a href="smith.html">Smith</a>
+      <a href="winkel-rad.html">Winkel / Radiant</a>
+    </nav>
+
 
     <section class="toolbar">
       <div class="toolbar-row">
@@ -578,8 +625,10 @@
 
     <div class="empty" id="emptyState">Keine passende Simulation gefunden.</div>
 
-    <footer class="footer-note">
-      Alaa Al Haidar - M.Eng. Information und Kommunikationstechnik – HTW Berlin – Stand: 2026
+    <footer class="footer">
+      Diese Startseite dient als zentrales Navigationsinterface. Neue Simulationen können durch
+      Hinzufügen weiterer Karten in derselben Struktur integriert werden. Für einen konsistenten
+      wissenschaftlichen Auftritt empfiehlt sich eine einheitliche Kopfzeile in allen Unterseiten.
     </footer>
   </div>
 
