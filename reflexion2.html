@@ -6,39 +6,9 @@
   <title>Reflexionsfaktor – Interaktive Simulation</title>
   <link rel="stylesheet" href="uni-style.css" />
   <style>
-
-    .compact-page {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 18px 18px 24px;
-      min-height: 100vh;
-    }
-
-    .compact-header .header-top {
-      padding: 16px 20px;
-    }
-
-    .compact-header .header-top h1 {
-      font-size: 28px;
-      margin-bottom: 6px;
-    }
-
-    .compact-header .header-top p {
-      font-size: 15px;
-      line-height: 1.5;
-    }
-
-    .compact-header .header-meta {
-      padding: 14px 18px;
-      gap: 10px;
-    }
-
-    .compact-header .meta-box {
-      padding: 10px 12px;
-    }
     .controls-grid {
       display: grid;
-      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      grid-template-columns: repeat(6, minmax(200px, 1fr));
       gap: 12px;
       align-items: end;
     }
@@ -49,7 +19,7 @@
       border-radius: 16px;
       box-shadow: var(--shadow);
       padding: 18px;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
     .top-title {
@@ -61,7 +31,7 @@
     .station-row {
       display: grid;
       grid-template-columns: 220px 1fr 220px;
-      gap: 18px;
+      gap: 14px;
       align-items: center;
     }
 
@@ -145,7 +115,7 @@
     .main-grid {
       display: grid;
       grid-template-columns: 1.2fr 0.8fr;
-      gap: 18px;
+      gap: 14px;
     }
 
     .canvas-box {
@@ -257,25 +227,94 @@
 
     @media (max-width: 900px) {
       .controls-grid {
-        grid-template-columns: repeat(2, minmax(140px, 1fr));
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
       }
     }
 
     @media (max-width: 560px) {
-      .compact-page {
-        padding: 12px 12px 18px;
-      }
-
       .controls-grid,
       .stats {
         grid-template-columns: 1fr;
       }
     }
+
+    .page-nav-wrap {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .page-nav a {
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      transition: 0.18s ease;
+    }
+
+    .page-nav a:hover,
+    .page-nav a.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
+    }
+
+    .page-size-like-smith {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px 18px 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .page-size-like-smith {
+        padding: 12px 12px 18px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="compact-page">
-    <header class="header compact-header">
+  <div class="page-size-like-smith">
+    <header class="compact-header header">
       <div class="header-top">
         <h1>Reflexionsfaktor – Interaktive Simulation</h1>
         <p>
@@ -304,7 +343,20 @@
       </div>
     </header>
 
-    <section class="card" style="margin-bottom: 18px;">
+    <div class="page-nav-wrap">
+      <nav class="page-nav" aria-label="Seitennavigation">
+        <a href="index.html">Startseite</a>
+        <a href="convul.html">Faltungsencoder</a>
+        <a href="crc-simu.html">CRC-Check</a>
+        <a href="modulation.html">Konstellation</a>
+        <a href="phase_modulation_input.html">BPSK</a>
+        <a href="reflexion2.html" class="active">Reflexion</a>
+        <a href="smith.html">Smith</a>
+        <a href="winkel-rad.html">Winkel / Wellen</a>
+      </nav>
+    </div>
+
+    <section class="card" style="margin-bottom: 14px;">
       <h2>Eingabe und Steuerung</h2>
       <div class="controls-grid">
         <div class="field">
@@ -446,9 +498,9 @@
         <div class="explain" id="description"></div>
       </div>
     </section>
-<br>
+
     <div class="footer-note">
-      Alaa Al Haidar - M.Eng. Information und Kommunikationstechnik – HTW Berlin – Stand: 2026
+      Diese Seite verwendet die gemeinsame Datei <strong>uni-style.css</strong> und ergänzt nur reflexionsspezifische Layoutregeln.
     </div>
   </div>
 
@@ -569,7 +621,7 @@
       pillForwardEl.textContent = `Hinwelle: 100.0%`;
       pillReflectedEl.textContent = `Rückwelle: ${(pref * 100).toFixed(1)}%`;
       pillDeliveredEl.textContent = `an Last übertragen: ${(ptrans * 100).toFixed(1)}%`;
-      lineLabelEl.textContent = `Z₀ = ${Z0.toFixed(0)} Ω`;
+      lineLabelEl.textContent = `Leitung / Kabel, Z₀ = ${Z0.toFixed(0)} Ω`;
 
       let text = "";
       if (mode === "match") {

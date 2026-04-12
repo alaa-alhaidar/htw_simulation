@@ -21,7 +21,7 @@
     }
 
     .compact-header .header-top h1 {
-      font-size: 28px;
+      font-size: 32px;
       margin-bottom: 6px;
     }
 
@@ -109,7 +109,7 @@
 
     .inputs-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(140px, 1fr));
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
       gap: 10px;
     }
 
@@ -130,13 +130,13 @@
 
     .value-display {
       display: grid;
-      grid-template-columns: repeat(3, minmax(140px, 1fr));
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
       gap: 10px;
       margin-top: 10px;
     }
 
     .value-display.wave-values {
-      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
     }
 
     .value-item {
@@ -217,6 +217,41 @@
         height: 240px;
       }
     }
+
+    .page-nav-wrap {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .page-nav a {
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      transition: 0.18s ease;
+    }
+
+    .page-nav a:hover,
+    .page-nav a.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
   </style>
 </head>
 <body>
@@ -249,6 +284,19 @@
         </div>
       </div>
     </header>
+
+    <div class="page-nav-wrap">
+      <nav class="page-nav" aria-label="Seitennavigation">
+        <a href="index.html">Startseite</a>
+        <a href="convul.html">Faltungsencoder</a>
+        <a href="crc-simu.html">CRC-Check</a>
+        <a href="modulation.html">Konstellation</a>
+        <a href="phase_modulation_input.html">BPSK</a>
+        <a href="reflexion2.html">Reflexion</a>
+        <a href="smith.html">Smith</a>
+        <a href="winkel-rad.html" class="active">Winkel / Wellen</a>
+      </nav>
+    </div>
 
     <section class="section-card">
       <h2 class="section-title">Radiant und Winkel</h2>
@@ -349,9 +397,6 @@
         </div>
       </div>
     </section>
-    <footer class="footer-note">
-      Alaa Al Haidar - M.Eng. Information und Kommunikationstechnik – HTW Berlin – Stand: 2026
-    </footer>
   </div>
 
   <script>

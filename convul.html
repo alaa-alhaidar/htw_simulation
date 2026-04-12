@@ -6,36 +6,6 @@
   <title>Faltungsencoder – Interaktive Simulation</title>
   <link rel="stylesheet" href="uni-style.css">
   <style>
-
-    .compact-page {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 18px 18px 24px;
-      min-height: 100vh;
-    }
-
-    .compact-header .header-top {
-      padding: 16px 20px;
-    }
-
-    .compact-header .header-top h1 {
-      font-size: 28px;
-      margin-bottom: 6px;
-    }
-
-    .compact-header .header-top p {
-      font-size: 15px;
-      line-height: 1.5;
-    }
-
-    .compact-header .header-meta {
-      padding: 14px 18px;
-      gap: 10px;
-    }
-
-    .compact-header .meta-box {
-      padding: 10px 12px;
-    }
   .register-cell {
     width: 74px;
     height: 74px;
@@ -74,10 +44,37 @@
       overflow-x: hidden;
     }
 
-    .page {
-      max-width: 1380px;
+        .compact-page {
+      max-width: 1500px;
       margin: 0 auto;
-      padding: 28px 24px 40px;
+      padding: 18px 18px 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
     }
 
     .header {
@@ -86,13 +83,13 @@
       box-shadow: var(--shadow);
       border-radius: 16px;
       overflow: hidden;
-      margin-bottom: 22px;
+      margin-bottom: 14px;
     }
 
     .header-top {
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       color: white;
-      padding: 22px 26px;
+      padding: 16px 20px;
     }
 
     .header-top h1 {
@@ -114,12 +111,12 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 14px;
-      padding: 18px 22px;
+      padding: 14px 18px;
       background: var(--surface);
     }
 
     .meta-box {
-      padding: 12px 14px;
+      padding: 10px 12px;
       background: var(--surface-2);
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -143,8 +140,8 @@
     .bottom-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 18px;
-      margin-bottom: 18px;
+      gap: 14px;
+      margin-bottom: 14px;
     }
 
     .card {
@@ -152,7 +149,7 @@
       border: 1px solid var(--line);
       border-radius: 16px;
       box-shadow: var(--shadow);
-      padding: 18px;
+      padding: 14px;
       min-width: 0;
     }
 
@@ -392,35 +389,6 @@
       padding: 18px 20px;
     }
 
-
-    .page-nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding: 14px 18px 18px;
-      background: var(--surface);
-      border-top: 1px solid var(--line);
-    }
-
-    .page-nav a {
-      text-decoration: none;
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--primary);
-      background: #fff;
-      border: 1px solid #b9c7d8;
-      transition: 0.18s ease;
-    }
-
-    .page-nav a:hover,
-    .page-nav a.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
     @media (max-width: 840px) {
       .input-row {
         grid-template-columns: 1fr;
@@ -432,12 +400,31 @@
         padding: 12px 12px 18px;
       }
 
-      .page {
-        padding: 16px 14px 28px;
-      }
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
+    }
 
       .header-top h1 {
-        font-size: 28px;
+        font-size: 32px;
       }
 
       .register-cell {
@@ -454,11 +441,46 @@
         font-size: 22px;
       }
     }
+
+    .page-nav-wrap {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .page-nav a {
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      transition: 0.18s ease;
+    }
+
+    .page-nav a:hover,
+    .page-nav a.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
   </style>
 </head>
 <body>
   <div class="compact-page">
-    <header class="header compact-header">
+    <header class="compact-header header">
       <div class="header-top">
         <h1>Faltungsencoder – Interaktive Simulation</h1>
         <p>
@@ -485,18 +507,20 @@
           <div class="value">Bitfolge laden, Schrittbetrieb, Gesamtlauf und Reset</div>
         </div>
       </div>
+    </header>
 
+    <div class="page-nav-wrap">
       <nav class="page-nav" aria-label="Seitennavigation">
         <a href="index.html">Startseite</a>
-        <a href="convul.html" class="active" aria-current="page">Faltungsencoder</a>
-        <a href="crc-simu.html">CRC</a>
-        <a href="modulation.html">Modulation</a>
+        <a href="convul.html" class="active">Faltungsencoder</a>
+        <a href="crc-simu.html">CRC-Check</a>
+        <a href="modulation.html">Konstellation</a>
         <a href="phase_modulation_input.html">BPSK</a>
         <a href="reflexion2.html">Reflexion</a>
         <a href="smith.html">Smith</a>
-        <a href="winkel-rad.html">Winkel / Radiant</a>
+        <a href="winkel-rad.html">Winkel / Wellen</a>
       </nav>
-    </header>
+    </div>
 
     <section class="top-grid">
       <div class="card">
@@ -592,7 +616,8 @@
     </section>
 
     <div class="footer-note">
-      Alaa Al Haidar - M.Eng. Information und Kommunikationstechnik – HTW Berlin – Stand: 2026
+      Diese Seite verwendet denselben sachlichen Stil wie die zentrale Startseite, damit alle
+      Simulationen als zusammengehörige Lehrumgebung erscheinen.
     </div>
   </div>
 

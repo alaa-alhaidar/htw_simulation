@@ -6,41 +6,11 @@
   <title>CRC-Check – Interaktive Simulation</title>
   <link rel="stylesheet" href="uni-style.css" />
   <style>
-
-    .compact-page {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 18px 18px 24px;
-      min-height: 100vh;
-    }
-
-    .compact-header .header-top {
-      padding: 16px 20px;
-    }
-
-    .compact-header .header-top h1 {
-      font-size: 28px;
-      margin-bottom: 6px;
-    }
-
-    .compact-header .header-top p {
-      font-size: 15px;
-      line-height: 1.5;
-    }
-
-    .compact-header .header-meta {
-      padding: 14px 18px;
-      gap: 10px;
-    }
-
-    .compact-header .meta-box {
-      padding: 10px 12px;
-    }
     .sim-grid {
       display: grid;
       grid-template-columns: 1.1fr 260px 1.1fr;
-      gap: 18px;
-      margin-bottom: 18px;
+      gap: 14px;
+      margin-bottom: 14px;
     }
 
     .control-grid {
@@ -160,7 +130,7 @@
 
     .info-strip {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 12px;
       margin-top: 12px;
     }
@@ -212,11 +182,84 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .page-nav-wrap {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .page-nav a {
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      transition: 0.18s ease;
+    }
+
+    .page-nav a:hover,
+    .page-nav a.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
+    }
+
+    .page-size-like-smith {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px 18px 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .page-size-like-smith {
+        padding: 12px 12px 18px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="compact-page">
-    <header class="header compact-header">
+  <div class="page-size-like-smith">
+    <header class="compact-header header">
       <div class="header-top">
         <h1>CRC-Check – Interaktive Simulation</h1>
         <p>
@@ -245,7 +288,20 @@
       </div>
     </header>
 
-    <section class="card" style="margin-bottom: 18px;">
+    <div class="page-nav-wrap">
+      <nav class="page-nav" aria-label="Seitennavigation">
+        <a href="index.html">Startseite</a>
+        <a href="convul.html">Faltungsencoder</a>
+        <a href="crc-simu.html" class="active">CRC-Check</a>
+        <a href="modulation.html">Konstellation</a>
+        <a href="phase_modulation_input.html">BPSK</a>
+        <a href="reflexion2.html">Reflexion</a>
+        <a href="smith.html">Smith</a>
+        <a href="winkel-rad.html">Winkel / Wellen</a>
+      </nav>
+    </div>
+
+    <section class="card" style="margin-bottom: 14px;">
       <h2>Eingabe und Steuerung</h2>
 
       <div class="control-grid">
@@ -257,7 +313,6 @@
         <div class="field">
           <label for="generator">Generatorpolynom G(x)</label>
           <input type="text" id="generator" value="10011" placeholder="z. B. 10011" />
-          
         </div>
 
         <div class="field">
@@ -322,9 +377,9 @@
       </div>
     </section>
 
-     <footer class="footer-note">
-      Alaa Al Haidar - M.Eng. Information und Kommunikationstechnik – HTW Berlin – Stand: 2026
-    </footer>
+    <div class="footer-note">
+      Diese Seite nutzt die gemeinsame Datei <strong>uni-style.css</strong> und ergänzt nur CRC-spezifische Layoutregeln.
+    </div>
   </div>
 
   <script>

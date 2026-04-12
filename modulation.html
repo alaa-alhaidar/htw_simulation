@@ -7,41 +7,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
   <link rel="stylesheet" href="uni-style.css" />
   <style>
-    .compact-page {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 18px 18px 24px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .compact-header .header-top {
-      padding: 16px 20px;
-    }
-
-    .compact-header .header-top h1 {
-      font-size: 28px;
-      margin-bottom: 6px;
-    }
-
-    .compact-header .header-top p {
-      font-size: 15px;
-      line-height: 1.5;
-    }
-
-    .compact-header .header-meta {
-      padding: 14px 18px;
-      gap: 10px;
-    }
-
-    .compact-header .meta-box {
-      padding: 10px 12px;
-    }
     .controls-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      grid-template-columns: repeat(4, minmax(240px, 1fr));
       gap: 12px;
       align-items: end;
     }
@@ -49,8 +17,8 @@
     .plots-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      margin-bottom: 18px;
+      gap: 14px;
+      margin-bottom: 14px;
     }
 
     .plot-card {
@@ -84,7 +52,7 @@
 
     .info-grid-local {
       display: grid;
-      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      grid-template-columns: repeat(4, minmax(280px, 1fr));
       gap: 12px;
     }
 
@@ -119,7 +87,7 @@
       }
 
       .info-grid-local {
-        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        grid-template-columns: repeat(2, minmax(280px, 1fr));
       }
     }
 
@@ -135,16 +103,83 @@
       }
     }
 
+    .page-nav-wrap {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .page-nav a {
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      transition: 0.18s ease;
+    }
+
+    .page-nav a:hover,
+    .page-nav a.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
+    }
+
+    .page-size-like-smith {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px 18px 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
     @media (max-width: 720px) {
-      .compact-page {
+      .page-size-like-smith {
         padding: 12px 12px 18px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="compact-page">
-    <header class="header compact-header">
+  <div class="page-size-like-smith">
+    <header class="compact-header header">
       <div class="header-top">
         <h1>Konstellationsdiagramme – Interaktive Simulation</h1>
         <p>
@@ -173,7 +208,20 @@
       </div>
     </header>
 
-    <section class="card" style="margin-bottom: 18px;">
+    <div class="page-nav-wrap">
+      <nav class="page-nav" aria-label="Seitennavigation">
+        <a href="index.html">Startseite</a>
+        <a href="convul.html">Faltungsencoder</a>
+        <a href="crc-simu.html">CRC-Check</a>
+        <a href="modulation.html" class="active">Konstellation</a>
+        <a href="phase_modulation_input.html">BPSK</a>
+        <a href="reflexion2.html">Reflexion</a>
+        <a href="smith.html">Smith</a>
+        <a href="winkel-rad.html">Winkel / Wellen</a>
+      </nav>
+    </div>
+
+    <section class="card" style="margin-bottom: 14px;">
       <h2>Eingabe und Steuerung</h2>
 
       <div class="controls-grid">
@@ -191,7 +239,7 @@
         <div class="field">
           <label for="noiseSlider">Rauschpegel SNR: <span id="snrValue">20</span> dB</label>
           <input type="range" id="noiseSlider" min="0" max="30" value="20" step="1" />
-          </div>
+        </div>
 
         <div class="field">
           <label for="symbolCount">Anzahl Symbole</label>
@@ -235,9 +283,9 @@
       <div class="info-grid-local" id="infoGrid"></div>
     </section>
 
-    <footer class="footer-note">
-      Alaa Al Haidar - M.Eng. Information und Kommunikationstechnik – HTW Berlin – Stand: 2026
-    </footer>
+    <div class="footer-note">
+      Diese Seite verwendet die gemeinsame Datei <strong>uni-style.css</strong> und ergänzt nur modulationsspezifische Layoutregeln.
+    </div>
   </div>
 
   <script>
@@ -413,7 +461,7 @@
         plot_bgcolor: '#ffffff',
         paper_bgcolor: 'transparent',
         margin: { t: 20, r: 20, b: 60, l: 60 },
-        showlegend: false,
+        showlegend: showNoise,
         legend: {
           x: 1.02,
           y: 1,
@@ -426,7 +474,7 @@
 
       const config = {
         responsive: true,
-        displayModeBar: false,
+        displayModeBar: true,
         modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
         displaylogo: false
       };
