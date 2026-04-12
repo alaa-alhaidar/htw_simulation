@@ -35,7 +35,7 @@
     }
 
     .app {
-      max-width: 1460px;
+      max-width: 1500px;
       margin: 0 auto;
     }
 
@@ -62,9 +62,43 @@
     }
 
     .subtitle {
-      margin: 6px 0 0;
+      margin: 0;
       color: var(--muted);
       font-size: 0.95rem;
+    }
+
+    .header-copy {
+      display: grid;
+      gap: 6px;
+    }
+
+    .header-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .meta-box {
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(203,213,225,0.9);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .meta-label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 700;
+    }
+
+    .meta-value {
+      font-size: 0.93rem;
+      line-height: 1.45;
+      color: #0f172a;
     }
 
     .content {
@@ -271,10 +305,32 @@
   <div class="app">
     <div class="container">
       <div class="header">
-        <h1>📐 Interaktives Smith-Diagramm</h1>
-        <p class="subtitle">
-          Hervorgehobener r-Kreis und x-Bogen passend zur Eingabe • Z₀ = 50 Ω
-        </p>
+        <div class="header-copy">
+          <h1>Smith-Diagramm – Interaktive Simulation</h1>
+          <p class="subtitle">
+            Hervorgehobener r-Kreis und x-Bogen passend zur Eingabe sowie direkte Visualisierung
+            von normierter Impedanz, Reflexionsfaktor und SWR.
+          </p>
+        </div>
+
+        <div class="header-meta">
+          <div class="meta-box">
+            <div class="meta-label">Themengebiet</div>
+            <div class="meta-value">Leitungstheorie / Smith-Chart</div>
+          </div>
+          <div class="meta-box">
+            <div class="meta-label">Lernziel</div>
+            <div class="meta-value">Zusammenhang zwischen R, X, z, Γ und SWR im Diagramm verstehen</div>
+          </div>
+          <div class="meta-box">
+            <div class="meta-label">Normierung</div>
+            <div class="meta-value">Z₀ = 50 Ω, Y₀ = 0.02 S</div>
+          </div>
+          <div class="meta-box">
+            <div class="meta-label">Interaktion</div>
+            <div class="meta-value">Ins Diagramm klicken oder R/X direkt eingeben</div>
+          </div>
+        </div>
       </div>
 
       <div class="content">

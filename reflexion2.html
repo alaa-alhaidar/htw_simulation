@@ -6,6 +6,36 @@
   <title>Reflexionsfaktor – Interaktive Simulation</title>
   <link rel="stylesheet" href="uni-style.css" />
   <style>
+
+    .compact-page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px 18px 24px;
+      min-height: 100vh;
+    }
+
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
+    }
     .controls-grid {
       display: grid;
       grid-template-columns: repeat(6, minmax(120px, 1fr));
@@ -232,6 +262,10 @@
     }
 
     @media (max-width: 560px) {
+      .compact-page {
+        padding: 12px 12px 18px;
+      }
+
       .controls-grid,
       .stats {
         grid-template-columns: 1fr;
@@ -240,8 +274,8 @@
   </style>
 </head>
 <body>
-  <div class="page">
-    <header class="header">
+  <div class="compact-page">
+    <header class="header compact-header">
       <div class="header-top">
         <h1>Reflexionsfaktor – Interaktive Simulation</h1>
         <p>

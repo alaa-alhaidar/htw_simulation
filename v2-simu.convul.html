@@ -28,6 +28,57 @@
             font-size: 28px;
         }
         
+        .page-header {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+        }
+
+        .page-header h1 {
+            text-align: left;
+            margin: 0 0 8px 0;
+            font-size: 28px;
+        }
+
+        .header-subtitle {
+            margin: 0;
+            color: #495057;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .header-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .meta-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6c757d;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .meta-value {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -242,7 +293,31 @@
 </head>
 <body>
     <div class="container">
-        <h1>Faltungsencoder (2,1,2) Simulation - Rate R = 1/2</h1>
+        <header class="page-header">
+            <h1>Faltungsencoder – Interaktive Simulation</h1>
+            <p class="header-subtitle">
+                Visualisierung eines Faltungsencoders vom Typ (2,1,2) mit Schrittbetrieb,
+                Registerzuständen und tabellarischer Ausgabe der codierten Bitfolge.
+            </p>
+            <div class="header-meta">
+                <div class="meta-box">
+                    <div class="meta-label">Themengebiet</div>
+                    <div class="meta-value">Kanalcodierung / Faltungsencoder</div>
+                </div>
+                <div class="meta-box">
+                    <div class="meta-label">Lernziel</div>
+                    <div class="meta-value">Bitfolge, Speicherzustand und Encoder-Ausgänge direkt verknüpfen</div>
+                </div>
+                <div class="meta-box">
+                    <div class="meta-label">Verfahren</div>
+                    <div class="meta-value">Typ (2,1,2), Rate R = 1/2</div>
+                </div>
+                <div class="meta-box">
+                    <div class="meta-label">Interaktion</div>
+                    <div class="meta-value">Bitfolge eingeben, Schrittbetrieb ausführen und Reset nutzen</div>
+                </div>
+            </div>
+        </header>
         
         <div class="main-grid">
             <div class="left-panel">

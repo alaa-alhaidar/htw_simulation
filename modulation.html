@@ -7,6 +7,38 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
   <link rel="stylesheet" href="uni-style.css" />
   <style>
+    .compact-page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px 18px 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
+    }
     .controls-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(180px, 1fr));
@@ -102,11 +134,17 @@
         grid-template-columns: 1fr;
       }
     }
+
+    @media (max-width: 720px) {
+      .compact-page {
+        padding: 12px 12px 18px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="page">
-    <header class="header">
+  <div class="compact-page">
+    <header class="header compact-header">
       <div class="header-top">
         <h1>Konstellationsdiagramme – Interaktive Simulation</h1>
         <p>
@@ -375,7 +413,7 @@
         plot_bgcolor: '#ffffff',
         paper_bgcolor: 'transparent',
         margin: { t: 20, r: 20, b: 60, l: 60 },
-        showlegend: showNoise,
+        showlegend: false,
         legend: {
           x: 1.02,
           y: 1,
@@ -388,7 +426,7 @@
 
       const config = {
         responsive: true,
-        displayModeBar: true,
+        displayModeBar: false,
         modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
         displaylogo: false
       };
