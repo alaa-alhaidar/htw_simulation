@@ -1,0 +1,642 @@
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; padding: 0; font-family: var(--font-sans); background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%); }
+@media (prefers-color-scheme: dark) {
+  body { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); }
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+.header {
+  background: linear-gradient(135deg, #378ADD 0%, #185FA5 100%);
+  color: white;
+  padding: 24px 32px;
+  border-radius: var(--border-radius-lg);
+  margin: 0 0 24px;
+  box-shadow: 0 4px 12px rgba(55, 138, 221, 0.25);
+}
+
+.header h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.header p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  margin: 0 0 24px;
+}
+
+@media (max-width: 900px) {
+  .main-grid { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--color-background-primary);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 20px;
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-border-tertiary);
+  padding-bottom: 12px;
+}
+
+.control-group {
+  margin: 0 0 24px;
+}
+
+.control-group:last-child {
+  margin-bottom: 0;
+}
+
+.control-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.control-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.control-input {
+  width: 100%;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-background-success);
+  color: var(--color-text-success);
+}
+
+.canvas-container {
+  position: relative;
+  background: var(--color-background-primary);
+  border: 1px solid var(--color-border-tertiary, #d7dde7);
+  border-radius: 16px;
+  padding: 18px;
+  min-height: 620px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  .canvas-container {
+    border-color: #4b5563;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  }
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #d7dde7;
+}
+
+@media (prefers-color-scheme: dark) {
+  canvas {
+    background: #1f1f1f;
+    border-color: #4b5563;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .canvas-container {
+    background: linear-gradient(to bottom, #2a2a2a 0%, #1f1f1f 100%);
+  }
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.readings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.reading-card {
+  background: var(--color-background-primary);
+  border-radius: var(--border-radius-lg);
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #1D9E75;
+}
+
+.reading-card.mic2 {
+  border-left-color: #378ADD;
+}
+
+.reading-card.mic3 {
+  border-left-color: #EF9F27;
+}
+
+.reading-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 8px;
+}
+
+.reading-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.reading-position {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  background: var(--color-background-secondary);
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.reading-value {
+  font-size: 32px;
+  font-weight: 500;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.reading-unit {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin-left: 4px;
+}
+
+.legend {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  margin: 16px 0 0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.legend-line {
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-line.forward { background: #F0997B; }
+.legend-line.reflected { background: #85B7EB; }
+.legend-line.sum { background: #EF9F27; height: 4px; }
+</style>
+
+<div class="container">
+  <div class="header">
+    <h1>Akustischer Wellenleiter</h1>
+    <p>Messung der akustischen Streukoeffizienten • Sensorik und Signalsteuerung SoSe 2026</p>
+  </div>
+
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-title">Steuerung</div>
+      
+      <div class="control-group">
+        <div class="control-label">
+          <span>Frequenz</span>
+          <span class="control-value" id="freq-val">600 Hz</span>
+        </div>
+        <input type="range" id="freq" min="200" max="2000" value="600" step="50" class="control-input">
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Amplitude</span>
+          <span class="control-value" id="amp-val">5.0 V</span>
+        </div>
+        <input type="range" id="amp" min="0" max="10" value="5" step="0.5" class="control-input">
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Reflexionsfaktor</span>
+          <span class="control-value" id="refl-val">0.80</span>
+        </div>
+        <input type="range" id="refl" min="0" max="100" value="80" step="5" class="control-input">
+      </div>
+
+      <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--color-border-tertiary);">
+        <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">Status</div>
+        <span class="status-badge">● Messung aktiv</span>
+      </div>
+    </div>
+
+    <div class="panel canvas-container">
+      <canvas id="waveguide" width="1400" height="600"></canvas>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-line forward"></div>
+          <span>Hinlaufende Welle (p⁺)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line reflected"></div>
+          <span>Rücklaufende Welle (p⁻)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line sum"></div>
+          <span>Gesamtdruck (p)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Messwerte</div>
+    <div class="readings-grid">
+      <div class="reading-card mic1">
+        <div class="reading-header">
+          <span class="reading-label">Mikrofon 1</span>
+          <span class="reading-position">200 mm</span>
+        </div>
+        <div class="reading-value">
+          <span id="mic1">0.00</span><span class="reading-unit">Pa</span>
+        </div>
+      </div>
+      <div class="reading-card mic2">
+        <div class="reading-header">
+          <span class="reading-label">Mikrofon 2</span>
+          <span class="reading-position">400 mm</span>
+        </div>
+        <div class="reading-value">
+          <span id="mic2">0.00</span><span class="reading-unit">Pa</span>
+        </div>
+      </div>
+      <div class="reading-card mic3">
+        <div class="reading-header">
+          <span class="reading-label">Mikrofon 3</span>
+          <span class="reading-position">600 mm</span>
+        </div>
+        <div class="reading-value">
+          <span id="mic3">0.00</span><span class="reading-unit">Pa</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('waveguide');
+const ctx = canvas.getContext('2d');
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+
+const SOUND_SPEED = 343;
+const TUBE_LENGTH = 950;
+const TUBE_HEIGHT = 80;
+const MIC_POSITIONS = [200, 400, 600];
+
+const colors = {
+  bg: isDark ? '#1f1f1f' : '#ffffff',
+  panel: isDark ? '#2a2a2a' : '#ffffff',
+  line: isDark ? '#4b5563' : '#d7dde7',
+  lineSoft: isDark ? 'rgba(120,130,145,0.22)' : 'rgba(199,212,228,0.45)',
+  text: isDark ? '#e5e7eb' : '#1f2937',
+  muted: isDark ? '#a1a1aa' : '#5f6b7a',
+
+  tubeFill: isDark ? '#2f3136' : '#f8fafc',
+  tubeStroke: isDark ? '#4b5563' : '#c7d4e4',
+  tubeAxis: isDark ? '#6b7280' : '#94a3b8',
+
+  speaker: '#4a90e2',
+  speakerDark: '#2f6fb8',
+  speakerLight: '#8cc0ff',
+
+  waveForward: '#1f7a4c',
+  waveReflected: '#b42318',
+  waveSum: '#c28400',
+
+  mic: ['#1D9E75', '#4a90e2', '#ef9f27'],
+  micDark: ['#146c52', '#2f6fb8', '#b97811']
+};
+
+let frequency = 600;
+let amplitude = 5.0;
+let reflectionCoeff = 0.8;
+let time = 0;
+let lastUpdateTime = 0;
+
+document.getElementById('freq').addEventListener('input', (e) => {
+  frequency = parseInt(e.target.value);
+  document.getElementById('freq-val').textContent = frequency + ' Hz';
+});
+
+document.getElementById('amp').addEventListener('input', (e) => {
+  amplitude = parseFloat(e.target.value);
+  document.getElementById('amp-val').textContent = amplitude.toFixed(1) + ' V';
+});
+
+document.getElementById('refl').addEventListener('input', (e) => {
+  reflectionCoeff = parseInt(e.target.value) / 100;
+  document.getElementById('refl-val').textContent = reflectionCoeff.toFixed(2);
+});
+
+function roundedRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawTubeGrid(startX, topY, width, height) {
+  ctx.save();
+  for (let x = 0; x <= width; x += 48) {
+    ctx.beginPath();
+    ctx.moveTo(startX + x, topY);
+    ctx.lineTo(startX + x, topY + height);
+    ctx.strokeStyle = x % 240 === 0 ? colors.line : colors.lineSoft;
+    ctx.lineWidth = x % 240 === 0 ? 1 : 0.7;
+    ctx.stroke();
+  }
+
+  for (let y = 0; y <= height; y += 22) {
+    ctx.beginPath();
+    ctx.moveTo(startX, topY + y);
+    ctx.lineTo(startX + width, topY + y);
+    ctx.strokeStyle = y % 44 === 0 ? colors.line : colors.lineSoft;
+    ctx.lineWidth = y % 44 === 0 ? 1 : 0.7;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const startX = 165;
+  const startY = 500;
+  const scale = 1.35;
+  const depth = 38;              // weniger 3D, flacher und einheitlicher
+  const heightPx = TUBE_HEIGHT * scale;
+  const tubeLengthPx = TUBE_LENGTH * scale;
+  const waveY = startY - heightPx / 2;
+
+  const speakerX = startX - 88;
+  const speakerY = waveY;
+  const speakerR = 32;
+
+  // Lautsprecher - cleaner / uniform
+  ctx.fillStyle = colors.speaker;
+  ctx.strokeStyle = colors.tubeStroke;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(speakerX, speakerY, speakerR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(speakerX, speakerY, speakerR - 8, 0, Math.PI * 2);
+  ctx.strokeStyle = colors.speakerDark;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  const membraneOffset = Math.sin(time * 0.035) * 2.2;
+  ctx.fillStyle = colors.speakerLight;
+  ctx.beginPath();
+  ctx.arc(speakerX + membraneOffset, speakerY, 15, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Verbinder
+  ctx.fillStyle = colors.tubeFill;
+  ctx.strokeStyle = colors.tubeStroke;
+  roundedRect(speakerX + speakerR - 2, speakerY - 24, 42, 48, 8);
+  ctx.fill();
+  ctx.stroke();
+
+  // Kanal Frontfläche
+  ctx.fillStyle = colors.tubeFill;
+  ctx.strokeStyle = colors.tubeStroke;
+  ctx.lineWidth = 2;
+  roundedRect(startX, startY - heightPx, tubeLengthPx, heightPx, 12);
+  ctx.fill();
+  ctx.stroke();
+
+  // leichte Oberseite / gleiche Struktur, aber ruhig
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.7)';
+  ctx.beginPath();
+  ctx.moveTo(startX + 1, startY - heightPx + 1);
+  ctx.lineTo(startX + tubeLengthPx - 1, startY - heightPx + 1);
+  ctx.lineTo(startX + tubeLengthPx + depth, startY - heightPx - depth);
+  ctx.lineTo(startX + depth, startY - heightPx - depth);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = colors.tubeStroke;
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(startX, startY - heightPx);
+  ctx.lineTo(startX + tubeLengthPx, startY - heightPx);
+  ctx.lineTo(startX + tubeLengthPx + depth, startY - heightPx - depth);
+  ctx.lineTo(startX + depth, startY - heightPx - depth);
+  ctx.closePath();
+  ctx.stroke();
+
+  // rechte Wand
+  ctx.fillStyle = isDark ? '#3a3d44' : '#eef3f9';
+  ctx.beginPath();
+  ctx.moveTo(startX + tubeLengthPx, startY);
+  ctx.lineTo(startX + tubeLengthPx, startY - heightPx);
+  ctx.lineTo(startX + tubeLengthPx + depth, startY - heightPx - depth);
+  ctx.lineTo(startX + tubeLengthPx + depth, startY - depth);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Innenclip
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(startX, startY - heightPx, tubeLengthPx, heightPx);
+  ctx.clip();
+
+  drawTubeGrid(startX, startY - heightPx, tubeLengthPx, heightPx);
+
+  // Physik
+  const wavelength = (SOUND_SPEED / frequency) * 1000;
+  const k = 2 * Math.PI / wavelength;
+  const omega = 2 * Math.PI * frequency;
+
+  // mehr Wellen sichtbar, aber ruhiger
+  const waveSpatialBoost = 1.45;
+  const waveScaleY = 5.4;
+  const waveTimeFactor = 0.35;   // langsamer
+
+  // Vorwärtswelle
+  ctx.beginPath();
+  for (let x = 0; x <= TUBE_LENGTH; x += 1) {
+    const xf = x * waveSpatialBoost;
+    const phase = k * xf - omega * (time / 1000) * waveTimeFactor;
+    const p = amplitude * Math.sin(phase);
+    const sx = startX + x * scale;
+    const sy = waveY - p * waveScaleY;
+    if (x === 0) ctx.moveTo(sx, sy);
+    else ctx.lineTo(sx, sy);
+  }
+  ctx.strokeStyle = colors.waveForward;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Rückwelle
+  ctx.beginPath();
+  for (let x = 0; x <= TUBE_LENGTH; x += 1) {
+    const xf = x * waveSpatialBoost;
+    const phase = -k * xf - omega * (time / 1000) * waveTimeFactor;
+    const p = amplitude * reflectionCoeff * Math.sin(phase);
+    const sx = startX + x * scale;
+    const sy = waveY - p * waveScaleY;
+    if (x === 0) ctx.moveTo(sx, sy);
+    else ctx.lineTo(sx, sy);
+  }
+  ctx.strokeStyle = colors.waveReflected;
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Summenwelle
+  ctx.beginPath();
+  for (let x = 0; x <= TUBE_LENGTH; x += 1) {
+    const xf = x * waveSpatialBoost;
+    const phaseF = k * xf - omega * (time / 1000) * waveTimeFactor;
+    const phaseR = -k * xf - omega * (time / 1000) * waveTimeFactor;
+    const p = amplitude * (Math.sin(phaseF) + reflectionCoeff * Math.sin(phaseR));
+    const sx = startX + x * scale;
+    const sy = waveY - p * waveScaleY;
+    if (x === 0) ctx.moveTo(sx, sy);
+    else ctx.lineTo(sx, sy);
+  }
+  ctx.strokeStyle = colors.waveSum;
+  ctx.lineWidth = 3.5;
+  ctx.stroke();
+
+  ctx.restore();
+
+  // Mikrofone - am Ende des Halters, uniform style
+  MIC_POSITIONS.forEach((pos, idx) => {
+    const x = startX + pos * scale;
+
+    const standTop = startY - heightPx - 6;   // direkt am Kanal
+    const standBottom = standTop - 44;        // Halter nach oben
+    const micY = standBottom - 14;            // Mikrofon sitzt AM ENDE
+    const micR = 15;
+
+    // Halter
+    ctx.beginPath();
+    ctx.moveTo(x, standTop);
+    ctx.lineTo(x, standBottom);
+    ctx.strokeStyle = colors.tubeAxis;
+    ctx.lineWidth = 2.2;
+    ctx.stroke();
+
+    // kleiner Queranschluss
+    ctx.beginPath();
+    ctx.moveTo(x - 8, standBottom + 6);
+    ctx.lineTo(x + 8, standBottom + 6);
+    ctx.strokeStyle = colors.line;
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    // Mikrofon
+    ctx.fillStyle = colors.mic[idx];
+    ctx.strokeStyle = colors.micDark[idx];
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, micY, micR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // inner ring - gleicher Stil wie Referenz, ruhig und sauber
+    ctx.beginPath();
+    ctx.arc(x, micY, micR - 5, 0, Math.PI * 2);
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Highlight
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.65)';
+    ctx.beginPath();
+    ctx.arc(x - 4, micY - 4, 4.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = colors.muted;
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Mic ${idx + 1}`, x, micY - 24);
+  });
+
+  // Labels
+  ctx.fillStyle = colors.muted;
+  ctx.font = '13px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Lautsprecher', speakerX, speakerY + speakerR + 24);
+  ctx.fillText('Reflektierende Wand', startX + tubeLengthPx + depth / 2, startY + 30);
+  ctx.fillText(`${TUBE_LENGTH} mm`, startX + tubeLengthPx / 2, startY + 48);
+
+  // Messwerte langsamer aktualisieren
+  const currentTime = Date.now();
+  if (currentTime - lastUpdateTime >= 300) {
+    MIC_POSITIONS.forEach((pos, idx) => {
+      const xf = pos * 1.45;
+      const phaseF = k * xf - omega * (time / 1000) * waveTimeFactor;
+      const phaseR = -k * xf - omega * (time / 1000) * waveTimeFactor;
+      const pressure = amplitude * (Math.sin(phaseF) + reflectionCoeff * Math.sin(phaseR));
+      document.getElementById(`mic${idx + 1}`).textContent = pressure.toFixed(2);
+    });
+    lastUpdateTime = currentTime;
+  }
+
+  time += 16;
+}
+
+function animate() {
+  draw();
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
