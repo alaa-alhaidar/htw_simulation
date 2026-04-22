@@ -272,3 +272,64 @@ th {
       box-shadow: var(--shadow);
       padding: 18px 20px;
     }
+.formula-panel {
+  margin-top: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+
+.formula-panel h3 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  color: var(--primary);
+  line-height: 1.25;
+}
+
+.formula-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.formula-block {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.formula-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.formula-text {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.formula-note {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+@media (max-width: 720px) {
+  .formula-panel h3 {
+    font-size: 20px;
+  }
+
+  .formula-text {
+    font-size: 14px;
+  }
+}

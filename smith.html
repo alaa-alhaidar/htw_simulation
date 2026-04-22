@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -257,9 +258,9 @@
       color: white;
       border-color: var(--primary);
     }
-
   </style>
 </head>
+
 <body>
   <div class="compact-page">
     <header class="header compact-header">
@@ -336,6 +337,117 @@
           <div class="legend-item">
             <div class="legend-color" style="background:#b42318;"></div>
             <span>Lastpunkt</span>
+          </div>
+        </div>
+        <div class="formula-panel">
+          <h3>Wichtige Formeln zum Smith-Diagramm</h3>
+
+          <div class="formula-grid">
+            <div class="formula-block">
+              <div class="formula-label">Normierte Impedanz</div>
+              <div class="formula-text">
+                z = Z / Z₀ = r + jx
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">Normierte Admittanz</div>
+              <div class="formula-text">
+                y = Y / Y₀ = g + jb = 1 / z
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">Reflexionsfaktor aus z</div>
+              <div class="formula-text">
+                Γ = (z - 1) / (z + 1)
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">Reflexionsfaktor aus Z</div>
+              <div class="formula-text">
+                Γ = (Z - Z₀) / (Z + Z₀)
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">Rückrechnung von Γ nach z</div>
+              <div class="formula-text">
+                z = (1 + Γ) / (1 - Γ)
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">Admittanz aus Impedanz</div>
+              <div class="formula-text">
+                Y = 1 / Z
+                <br>
+                y = 1 / z
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">SWR</div>
+              <div class="formula-text">
+                SWR = (1 + |Γ|) / (1 - |Γ|)
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">Betrag und Phase von Γ</div>
+              <div class="formula-text">
+                |Γ| = √(Re(Γ)² + Im(Γ)²)
+                <br>
+                φ = atan2(Im(Γ), Re(Γ))
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">Impedanz → Admittanz in kartesischer Form</div>
+              <div class="formula-text">
+                Z = R + jX
+                <br>
+                Y = 1 / (R + jX) = (R - jX) / (R² + X²)
+                <br>
+                G = R / (R² + X²)
+                <br>
+                B = -X / (R² + X²)
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">Parallelschritt in der Admittanzebene</div>
+              <div class="formula-text">
+                y₁ = g + j(b + Δb)
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">Serienschritt in der Impedanzebene</div>
+              <div class="formula-text">
+                z₂ = r + j(x + Δx)
+              </div>
+            </div>
+
+            <div class="formula-block">
+              <div class="formula-label">L-Anpassung mit Parallel → Serie</div>
+              <div class="formula-text">
+                y = g + jb
+                <br>
+                Ziel nach Parallelschritt: Re(z₁) = 1
+                <br>
+                z₁ = 1 / y₁
+                <br>
+                Danach Serienreaktanz so wählen, dass Im(z₂) = 0
+              </div>
+            </div>
+          </div>
+
+          <div class="formula-note">
+            Links steht jetzt die vollständige Formelübersicht zum Smith-Diagramm:
+            Normierung, Reflexionsfaktor, Rückrechnung, SWR, Impedanz/Admittanz sowie
+            die beiden Anpassungsschritte <strong>Parallel → Serie</strong>.
           </div>
         </div>
       </div>
@@ -933,4 +1045,5 @@
     resizeCanvas();
   </script>
 </body>
+
 </html>
