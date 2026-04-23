@@ -416,10 +416,11 @@
         </div>
 
         <div class="line-zone">
-          <div class="wave-overlay-label" id="lineLabel">Leitung / Kabel</div>
+          
           <canvas id="waveCanvas" width="760" height="240"></canvas>
 
           <div class="wave-overlay-info">
+            <div class="pill" id="kabel">Leitung/Kabel Z₀ = 50 Ω</div>
             <div class="pill" id="pillForward">Hinwelle: 100.0%</div>
             <div class="pill" id="pillReflected">Rückwelle: 0.0%</div>
             <div class="pill" id="pillDelivered">an Last übertragen: 100.0%</div>
@@ -622,7 +623,7 @@
       pillForwardEl.textContent = `Hinwelle: 100.0%`;
       pillReflectedEl.textContent = `Rückwelle: ${(pref * 100).toFixed(1)}%`;
       pillDeliveredEl.textContent = `an Last übertragen: ${(ptrans * 100).toFixed(1)}%`;
-      lineLabelEl.textContent = `Leitung / Kabel, Z₀ = ${Z0.toFixed(0)} Ω`;
+      
 
       let text = "";
       if (mode === "match") {
