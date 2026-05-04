@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FFT – Interaktive Simulation</title>
+    <link rel="stylesheet" href="uni-style.css" />
+    <style>
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(180px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .top-illustration {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 18px;
+            margin-bottom: 14px;
+        }
+
+        .top-title {
+            margin: 0 0 12px;
+            font-size: 22px;
+            color: var(--primary);
+        }
+
+        .station-row {
+            display: grid;
+            grid-template-columns: 220px 1fr 220px;
+            gap: 14px;
+            align-items: stretch;
+        }
+
+        .station {
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .station h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            color: var(--primary);
+        }
+
+        .station .small {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .station .big {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .line-zone {
+            position: relative;
+            height: 260px;
+            border-radius: 14px;
+            background: #f8fafc;
+            border: 1px solid var(--line);
+            overflow: hidden;
+        }
+
+        #signalCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .wave-overlay-info {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            z-index: 2;
+        }
+
+        .pill {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 7px 12px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 14px;
+        }
+
+        .canvas-box {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        canvas.main-canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+        }
+
+        .fft-stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .stats-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat {
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 82px;
+        }
+
+        .stat .label {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 700;
+        }
+
+        .stat .value {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .explain {
+            margin-top: 14px;
+            color: var(--text);
+            line-height: 1.65;
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .ok {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .warn {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .page-nav-wrap {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 14px 16px;
+            margin-bottom: 14px;
+        }
+
+        .page-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .page-nav a {
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            background: #fff;
+            border: 1px solid var(--line);
+            transition: 0.18s ease;
+        }
+
+        .page-nav a:hover,
+        .page-nav a.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .compact-header .header-top {
+            padding: 16px 20px;
+        }
+
+        .compact-header .header-top h1 {
+            font-size: 32px;
+            margin-bottom: 6px;
+        }
+
+        .compact-header .header-top p {
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .compact-header .header-meta {
+            padding: 14px 18px;
+            gap: 10px;
+        }
+
+        .compact-header .meta-box {
+            padding: 10px 12px;
+        }
+
+        .page-size-like-smith {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 18px 18px 24px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .sim-btn {
+            appearance: none;
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--text);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.18s ease;
+        }
+
+        .sim-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        @media (max-width: 1100px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .station-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .controls-grid {
+                grid-template-columns: repeat(2, minmax(220px, 1fr));
+            }
+        }
+
+        @media (max-width: 560px) {
+
+            .controls-grid,
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page-size-like-smith {
+                padding: 12px 12px 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-size-like-smith">
+        <header class="compact-header header">
+            <div class="header-top">
+                <h1>FFT – Interaktive Simulation</h1>
+                <p>
+                    Visualisierung von Abtastung, 1-Sekunden-Aufnahmefenster und Frequenzanalyse
+                    eines zufällig erzeugten Signals mit diskreter Fourier-Transformation.
+                </p>
+            </div>
+
+            <div class="header-meta">
+                <div class="meta-box">
+                    <div class="label">Themengebiet</div>
+                    <div class="value">Signalverarbeitung / FFT</div>
+                </div>
+                <div class="meta-box">
+                    <div class="label">Lernziel</div>
+                    <div class="value">Zusammenhang zwischen Zeitbereich und Frequenzbereich verstehen</div>
+                </div>
+                <div class="meta-box">
+                    <div class="label">Fenster</div>
+                    <div class="value">Aufnahmezeit immer 1.0 s</div>
+                </div>
+                <div class="meta-box">
+                    <div class="label">Interaktion</div>
+                    <div class="value">Samplingrate, Signalanzahl, Rauschen und Random-Signal</div>
+                </div>
+            </div>
+        </header>
+
+          <div class="page-nav-wrap">
+      <nav class="page-nav" aria-label="Seitennavigation">
+        <a href="index.html">Startseite</a>
+        <a href="convul.html">Faltungsencoder</a>
+        <a href="crc-simu.html">CRC-Check</a>
+        <a href="modulation.html">Konstellation</a>
+        <a href="phase_modulation_input.html">BPSK</a>
+        <a href="phasenverschiebung.html" class="active">Phasenverschiebung</a>
+        <a href="smith.html">Smith</a>
+        <a href="winkel-rad.html">Winkel / Wellen</a>
+      </nav>
+    </div>
+
+        <section class="card" style="margin-bottom: 14px;">
+            <h2>Eingabe und Steuerung</h2>
+
+            <div class="controls-grid">
+                <div class="field">
+                    <label for="fs">Samplingrate f<sub>s</sub> [Hz]</label>
+                    <select id="fs">
+                        <option value="128">128 Hz</option>
+                        <option value="256">256 Hz</option>
+                        <option value="512" selected>512 Hz</option>
+                        <option value="1024">1024 Hz</option>
+                        <option value="2048">2048 Hz</option>
+                        
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="components">Anzahl Zufallsfrequenzen</label>
+                    <input id="components" type="number" value="2" min="1" max="3" step="1" />
+                </div>
+
+                <div class="field">
+                    <label for="noise">Rauschanteil</label>
+                    <input id="noise" type="number" value="0.05" min="0" max="0.5" step="0.01" />
+                </div>
+
+                <div class="field">
+                    <label for="windowType">Fenster</label>
+                    <select id="windowType">
+                        <option value="hann">Hann</option>
+                        <option value="rect">Rechteck</option>
+                        <option value="hamming">Hamming</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="fmax">FFT-Anzeige bis [Hz]</label>
+                    <input id="fmax" type="number" value="300" min="10" max="2000" step="10" />
+                </div>
+
+                <div class="field">
+                    <label>Aktion</label>
+                    <div class="btn-row" style="margin-top:0;">
+                        <button class="sim-btn" id="newSignalBtn" type="button">Neues Signal</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="small-note" style="margin-top: 12px;">
+                Das Signal wird jedes Mal für <strong>1.0 s</strong> abgetastet.
+                Danach wird die <strong>FFT</strong> berechnet und das Spektrum im Frequenzbereich dargestellt.
+            </div>
+        </section>
+
+        <section class="top-illustration">
+            <h2 class="top-title">Zeitbereich – 1 Sekunde Aufnahme</h2>
+
+            <div class="station-row">
+                <div class="station">
+                    <div>
+                        <h3>Signalquelle</h3>
+                        <div class="small">Zufällige Sinusanteile</div>
+                    </div>
+                    <div class="big" id="sourceInfo">2 Komponenten</div>
+                    <div class="small" id="freqList">f = –</div>
+                </div>
+
+                <div class="line-zone">
+                    <canvas id="signalCanvas" width="760" height="260"></canvas>
+
+                    <div class="wave-overlay-info">
+                        <div class="pill" id="pillFs">fₛ = 512 Hz</div>
+                        <div class="pill" id="pillN">N = 512 Samples</div>
+                        <div class="pill" id="pillT">T = 1.0 s</div>
+                        <div class="pill" id="pillWindow">Fenster: Hann</div>
+                    </div>
+                </div>
+
+                <div class="station">
+                    <div>
+                        <h3>FFT-Auswertung</h3>
+                        <div class="small">Diskrete Frequenzanalyse</div>
+                    </div>
+                    <div class="big" id="fftInfo">Δf = 1.00 Hz</div>
+                    <div class="small" id="peakInfo">Peak bei – Hz</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="main-grid">
+            <div class="fft-stack">
+                <div class="canvas-box">
+                    <h2>Zeitsignal x[n]</h2>
+                    <canvas class="main-canvas" id="timeCanvas" width="980" height="320"></canvas>
+
+                    <div class="legend">
+                        <span><i class="dot" style="background: #eb0426"></i> diskrete Samples</span>
+                        <span><i class="dot" style="background: #1f7a4c"></i> verbundenes Signal</span>
+                        <span><i class="dot" style="background: #c28400"></i> 1-Sekunden-Fenster</span>
+                    </div>
+                </div>
+
+                <div class="canvas-box">
+                    <h2>FFT-Spektrum |X[k]|</h2>
+                    <canvas class="main-canvas" id="fftCanvas" width="980" height="320"></canvas>
+
+                    <div class="legend">
+                        <span><i class="dot" style="background: #7a1f1f"></i> Magnitudenspektrum</span>
+                        <span><i class="dot" style="background: #c28400"></i> stärkster Peak</span>
+                        <span><i class="dot" style="background: #0891b2"></i> Frequenzauflösung Δf</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <h2>Kenngrößen</h2>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="label">Samplingrate</div>
+                        <div class="value" id="statFs">512 Hz</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="label">Aufnahmezeit</div>
+                        <div class="value" id="statDuration">1.0 s</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="label">Samples N</div>
+                        <div class="value" id="statN">512</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="label">Frequenzauflösung</div>
+                        <div class="value" id="statDf">1.00 Hz</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="label">Stärkster Peak</div>
+                        <div class="value" id="statPeak">–</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="label">Fenstertyp</div>
+                        <div class="value" id="statWindow">Hann</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="label">Zufallsfrequenzen</div>
+                        <div class="value" id="statComponents">–</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="label">Rauschanteil</div>
+                        <div class="value" id="statNoise">0.08</div>
+                    </div>
+                </div>
+
+                <div class="explain" id="description">
+                    <span class="ok">FFT-Erklärung:</span>
+                    Im Zeitbereich wird ein zufälliges Signal über genau 1 Sekunde aufgenommen.
+                    Die FFT zerlegt dieses Signal in seine Frequenzanteile. Peaks im Spektrum zeigen,
+                    bei welchen Frequenzen besonders viel Signalenergie vorhanden ist.
+                </div>
+            </div>
+        </section>
+
+        <div class="footer-note">
+            Projekt von Alaa Al Haidar in Nachrichtentechnik htw 2026.
+        </div>
+    </div>
+
+    <script>
+        const fsEl = document.getElementById("fs");
+        const componentsEl = document.getElementById("components");
+        const noiseEl = document.getElementById("noise");
+        const windowTypeEl = document.getElementById("windowType");
+        const fmaxEl = document.getElementById("fmax");
+        const newSignalBtn = document.getElementById("newSignalBtn");
+
+        const signalCanvas = document.getElementById("signalCanvas");
+        const signalCtx = signalCanvas.getContext("2d");
+
+        const timeCanvas = document.getElementById("timeCanvas");
+        const timeCtx = timeCanvas.getContext("2d");
+
+        const fftCanvas = document.getElementById("fftCanvas");
+        const fftCtx = fftCanvas.getContext("2d");
+
+        const sourceInfoEl = document.getElementById("sourceInfo");
+        const freqListEl = document.getElementById("freqList");
+        const fftInfoEl = document.getElementById("fftInfo");
+        const peakInfoEl = document.getElementById("peakInfo");
+
+        const pillFsEl = document.getElementById("pillFs");
+        const pillNEl = document.getElementById("pillN");
+        const pillTEl = document.getElementById("pillT");
+        const pillWindowEl = document.getElementById("pillWindow");
+
+        const statFsEl = document.getElementById("statFs");
+        const statDurationEl = document.getElementById("statDuration");
+        const statNEl = document.getElementById("statN");
+        const statDfEl = document.getElementById("statDf");
+        const statPeakEl = document.getElementById("statPeak");
+        const statWindowEl = document.getElementById("statWindow");
+        const statComponentsEl = document.getElementById("statComponents");
+        const statNoiseEl = document.getElementById("statNoise");
+        const descriptionEl = document.getElementById("description");
+
+        const DURATION = 1.0;
+        let currentSignal = [];
+        let currentWindowed = [];
+        let currentSpectrum = [];
+        let currentFreqs = [];
+        let randomComponents = [];
+        let currentPeak = { freq: 0, mag: 0 };
+
+        function clamp(v, min, max) {
+            return Math.max(min, Math.min(max, v));
+        }
+
+        function rand(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        function windowName(key) {
+            if (key === "rect") return "Rechteck";
+            if (key === "hamming") return "Hamming";
+            return "Hann";
+        }
+
+
+
+        function buildWindow(N, type) {
+            const w = new Array(N);
+            for (let n = 0; n < N; n++) {
+                if (type === "rect") {
+                    w[n] = 1;
+                } else if (type === "hamming") {
+                    w[n] = 0.54 - 0.46 * Math.cos((2 * Math.PI * n) / (N - 1));
+                } else {
+                    w[n] = 0.5 * (1 - Math.cos((2 * Math.PI * n) / (N - 1)));
+                }
+            }
+            return w;
+        }
+
+        function fft(re, im) {
+            const n = re.length;
+            const levels = Math.log2(n);
+
+            for (let i = 0; i < n; i++) {
+                let j = 0;
+                for (let bit = 0; bit < levels; bit++) {
+                    j = (j << 1) | ((i >>> bit) & 1);
+                }
+                if (j > i) {
+                    [re[i], re[j]] = [re[j], re[i]];
+                    [im[i], im[j]] = [im[j], im[i]];
+                }
+            }
+
+            for (let size = 2; size <= n; size <<= 1) {
+                const halfsize = size >>> 1;
+                const tablestep = (2 * Math.PI) / size;
+
+                for (let i = 0; i < n; i += size) {
+                    for (let j = i, k = 0; j < i + halfsize; j++, k++) {
+                        const angle = -k * tablestep;
+                        const cos = Math.cos(angle);
+                        const sin = Math.sin(angle);
+
+                        const l = j + halfsize;
+                        const tre = re[l] * cos - im[l] * sin;
+                        const tim = re[l] * sin + im[l] * cos;
+
+                        re[l] = re[j] - tre;
+                        im[l] = im[j] - tim;
+                        re[j] += tre;
+                        im[j] += tim;
+                    }
+                }
+            }
+        }
+
+        function makeRandomSignal() {
+            const fs = Math.max(64, parseInt(fsEl.value, 10) || 512);
+            const count = clamp(parseInt(componentsEl.value, 10) || 2, 1, 3);
+            const noise = clamp(parseFloat(noiseEl.value) || 0, 0, 0.5);
+
+            const N = Math.round(fs * DURATION);
+            const nyquist = fs / 2;
+            const usableMax = Math.max(10, Math.min(nyquist * 0.9, 400));
+
+            randomComponents = [];
+            for (let i = 0; i < count; i++) {
+                randomComponents.push({
+                    freq: rand(10, usableMax),
+                    amp: rand(0.5, 1.1),
+                    phase: rand(0, 2 * Math.PI)
+                });
+            }
+
+            const signal = new Array(N);
+            for (let n = 0; n < N; n++) {
+                const t = n / fs;
+                let x = 0;
+
+                for (const c of randomComponents) {
+                    x += c.amp * Math.sin(2 * Math.PI * c.freq * t + c.phase);
+                }
+
+                x += noise * (Math.random() * 2 - 1);
+                signal[n] = x;
+            }
+
+            currentSignal = signal;
+            processSignal();
+        }
+
+        function processSignal() {
+            const fs = Math.max(64, parseInt(fsEl.value, 10) || 512);
+            const N = currentSignal.length;
+            const type = windowTypeEl.value;
+            const windowVals = buildWindow(N, type);
+
+            currentWindowed = currentSignal.map((x, i) => x * windowVals[i]);
+
+            const re = currentWindowed.slice();
+            const im = new Array(N).fill(0);
+
+            fft(re, im);
+
+            const half = Math.floor(N / 2);
+            currentSpectrum = new Array(half + 1);
+            currentFreqs = new Array(half + 1);
+
+            for (let k = 0; k <= half; k++) {
+                let mag = Math.sqrt(re[k] * re[k] + im[k] * im[k]) / N;
+                if (k !== 0 && k !== half) mag *= 2;
+                currentSpectrum[k] = mag;
+                currentFreqs[k] = (k * fs) / N;
+            }
+
+            currentPeak = getPeak();
+            updateUI();
+            drawAll();
+        }
+
+        function getPeak() {
+            let peakIdx = 1;
+            let peakVal = -Infinity;
+
+            for (let i = 1; i < currentSpectrum.length; i++) {
+                if (currentSpectrum[i] > peakVal) {
+                    peakVal = currentSpectrum[i];
+                    peakIdx = i;
+                }
+            }
+
+            return {
+                freq: currentFreqs[peakIdx] || 0,
+                mag: currentSpectrum[peakIdx] || 0
+            };
+        }
+
+        function updateUI() {
+            const fs = Math.max(64, parseInt(fsEl.value, 10) || 512);
+            const N = currentSignal.length;
+            const df = fs / N;
+            const noise = clamp(parseFloat(noiseEl.value) || 0, 0, 0.5);
+
+            const freqText = randomComponents
+                .map((c, i) => `f${i + 1} = ${c.freq.toFixed(1)} Hz`)
+                .join(" · ");
+
+            sourceInfoEl.textContent = `${randomComponents.length} Komponenten`;
+            freqListEl.textContent = freqText || "f = –";
+
+            fftInfoEl.textContent = `Δf = ${df.toFixed(2)} Hz`;
+            peakInfoEl.textContent = `Peak bei ${currentPeak.freq.toFixed(1)} Hz`;
+
+            pillFsEl.textContent = `fₛ = ${fs} Hz`;
+            pillNEl.textContent = `N = ${N} Samples`;
+            pillTEl.textContent = `T = ${DURATION.toFixed(1)} s`;
+            pillWindowEl.textContent = `Fenster: ${windowName(windowTypeEl.value)}`;
+
+            statFsEl.textContent = `${fs} Hz`;
+            statDurationEl.textContent = `${DURATION.toFixed(1)} s`;
+            statNEl.textContent = `${N}`;
+            statDfEl.textContent = `${df.toFixed(2)} Hz`;
+            statPeakEl.textContent = `${currentPeak.freq.toFixed(1)} Hz`;
+            statWindowEl.textContent = windowName(windowTypeEl.value);
+            statComponentsEl.textContent = freqText || "–";
+            statNoiseEl.textContent = noise.toFixed(2);
+
+            descriptionEl.innerHTML =
+                `<span class="ok">FFT-Erklärung:</span> Das Signal wird mit <strong>${fs} Hz</strong> über genau <strong>${DURATION.toFixed(1)} s</strong> aufgenommen. ` +
+                `Für die schnelle Berechnung wird eine <strong>FFT mit N = ${N}</strong> verwendet. ` +
+                `Die Frequenzauflösung beträgt <strong>${df.toFixed(2)} Hz</strong>. ` +
+                `Der stärkste Peak liegt aktuell bei <strong>${currentPeak.freq.toFixed(1)} Hz</strong>.`;
+        }
+
+        function drawAxes(ctx, w, h, margin, xLabel, yLabel) {
+            ctx.strokeStyle = "#c7d4e4";
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+            ctx.moveTo(margin.left, h - margin.bottom);
+            ctx.lineTo(w - margin.right, h - margin.bottom);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(margin.left, margin.top);
+            ctx.lineTo(margin.left, h - margin.bottom);
+            ctx.stroke();
+
+            ctx.fillStyle = "#5f6b7a";
+            ctx.font = "12px Arial";
+            ctx.fillText(xLabel, w - margin.right - 30, h - 10);
+            ctx.save();
+            ctx.translate(16, margin.top + 24);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(yLabel, 0, 0);
+            ctx.restore();
+        }
+
+        function drawSignalOverview() {
+            const w = signalCanvas.width;
+            const h = signalCanvas.height;
+            const margin = { left: 34, right: 24, top: 20, bottom: 42 };
+
+            signalCtx.clearRect(0, 0, w, h);
+
+            const N = currentSignal.length;
+            if (!N) return;
+
+            const minY = Math.min(...currentSignal);
+            const maxY = Math.max(...currentSignal);
+            const ySpan = Math.max(0.1, maxY - minY);
+
+            drawAxes(signalCtx, w, h, margin, "t [s]", "x(t)");
+
+            for (let i = 0; i <= 10; i++) {
+                const x = margin.left + ((w - margin.left - margin.right) * i) / 10;
+                signalCtx.strokeStyle = "rgba(199,212,228,0.45)";
+                signalCtx.lineWidth = 1;
+                signalCtx.beginPath();
+                signalCtx.moveTo(x, margin.top);
+                signalCtx.lineTo(x, h - margin.bottom);
+                signalCtx.stroke();
+
+                signalCtx.fillStyle = "#5f6b7a";
+                signalCtx.font = "11px Arial";
+                signalCtx.textAlign = "center";
+                signalCtx.fillText((i / 10).toFixed(1), x, h - margin.bottom + 18);
+            }
+
+            signalCtx.strokeStyle = "#1f7a4c";
+            signalCtx.lineWidth = 2.5;
+            signalCtx.beginPath();
+
+            for (let n = 0; n < N; n++) {
+                const t = n / (N - 1);
+                const x = margin.left + t * (w - margin.left - margin.right);
+                const y = margin.top + (1 - (currentSignal[n] - minY) / ySpan) * (h - margin.top - margin.bottom);
+                if (n === 0) signalCtx.moveTo(x, y);
+                else signalCtx.lineTo(x, y);
+            }
+            signalCtx.stroke();
+
+            signalCtx.fillStyle = "#4a90e2";
+            for (let n = 0; n < N; n += Math.max(1, Math.floor(N / 120))) {
+                const t = n / (N - 1);
+                const x = margin.left + t * (w - margin.left - margin.right);
+                const y = margin.top + (1 - (currentSignal[n] - minY) / ySpan) * (h - margin.top - margin.bottom);
+                signalCtx.beginPath();
+                signalCtx.arc(x, y, 2.2, 0, Math.PI * 2);
+                signalCtx.fill();
+            }
+        }
+
+        function drawTimeCanvas() {
+            const w = timeCanvas.width;
+            const h = timeCanvas.height;
+            const margin = { left: 56, right: 22, top: 20, bottom: 44 };
+
+            timeCtx.clearRect(0, 0, w, h);
+
+            const N = currentSignal.length;
+            if (!N) return;
+
+            const minY = Math.min(...currentSignal);
+            const maxY = Math.max(...currentSignal);
+            const ySpan = Math.max(0.2, maxY - minY);
+
+            drawAxes(timeCtx, w, h, margin, "t [s]", "Amplitude");
+
+            for (let i = 0; i <= 10; i++) {
+                const x = margin.left + ((w - margin.left - margin.right) * i) / 10;
+                timeCtx.strokeStyle = i % 5 === 0 ? "rgba(199,212,228,0.7)" : "rgba(199,212,228,0.35)";
+                timeCtx.lineWidth = 1;
+                timeCtx.beginPath();
+                timeCtx.moveTo(x, margin.top);
+                timeCtx.lineTo(x, h - margin.bottom);
+                timeCtx.stroke();
+
+                timeCtx.fillStyle = "#5f6b7a";
+                timeCtx.font = "11px Arial";
+                timeCtx.textAlign = "center";
+                timeCtx.fillText((i / 10).toFixed(1), x, h - margin.bottom + 18);
+            }
+
+            for (let i = 0; i <= 6; i++) {
+                const yy = margin.top + ((h - margin.top - margin.bottom) * i) / 6;
+                timeCtx.strokeStyle = "rgba(199,212,228,0.30)";
+                timeCtx.lineWidth = 1;
+                timeCtx.beginPath();
+                timeCtx.moveTo(margin.left, yy);
+                timeCtx.lineTo(w - margin.right, yy);
+                timeCtx.stroke();
+            }
+
+            timeCtx.strokeStyle = "#1f7a4c";
+            timeCtx.lineWidth = 2.6;
+            timeCtx.beginPath();
+
+            for (let n = 0; n < N; n++) {
+                const t = n / (N - 1);
+                const x = margin.left + t * (w - margin.left - margin.right);
+                const y = margin.top + (1 - (currentSignal[n] - minY) / ySpan) * (h - margin.top - margin.bottom);
+                if (n === 0) timeCtx.moveTo(x, y);
+                else timeCtx.lineTo(x, y);
+            }
+            timeCtx.stroke();
+
+            timeCtx.fillStyle = "#4a90e2";
+            for (let n = 0; n < N; n += Math.max(1, Math.floor(N / 160))) {
+                const t = n / (N - 1);
+                const x = margin.left + t * (w - margin.left - margin.right);
+                const y = margin.top + (1 - (currentSignal[n] - minY) / ySpan) * (h - margin.top - margin.bottom);
+                timeCtx.beginPath();
+                timeCtx.arc(x, y, 2.2, 0, Math.PI * 2);
+                timeCtx.fill();
+            }
+        }
+
+        function drawFFTCanvas() {
+            const w = fftCanvas.width;
+            const h = fftCanvas.height;
+            const margin = { left: 56, right: 22, top: 20, bottom: 44 };
+
+            fftCtx.clearRect(0, 0, w, h);
+            drawAxes(fftCtx, w, h, margin, "f [Hz]", "|X[k]|");
+
+            const fmax = Math.max(10, parseFloat(fmaxEl.value) || 200);
+            let maxMag = 0;
+
+            for (let i = 0; i < currentFreqs.length; i++) {
+                if (currentFreqs[i] <= fmax) maxMag = Math.max(maxMag, currentSpectrum[i]);
+            }
+            maxMag = Math.max(maxMag, 0.001);
+
+            for (let i = 0; i <= 10; i++) {
+                const x = margin.left + ((w - margin.left - margin.right) * i) / 10;
+                fftCtx.strokeStyle = i % 5 === 0 ? "rgba(199,212,228,0.7)" : "rgba(199,212,228,0.35)";
+                fftCtx.lineWidth = 1;
+                fftCtx.beginPath();
+                fftCtx.moveTo(x, margin.top);
+                fftCtx.lineTo(x, h - margin.bottom);
+                fftCtx.stroke();
+
+                fftCtx.fillStyle = "#5f6b7a";
+                fftCtx.font = "11px Arial";
+                fftCtx.textAlign = "center";
+                fftCtx.fillText((i * fmax / 10).toFixed(0), x, h - margin.bottom + 18);
+            }
+
+            for (let i = 0; i <= 5; i++) {
+                const yy = margin.top + ((h - margin.top - margin.bottom) * i) / 5;
+                fftCtx.strokeStyle = "rgba(199,212,228,0.30)";
+                fftCtx.lineWidth = 1;
+                fftCtx.beginPath();
+                fftCtx.moveTo(margin.left, yy);
+                fftCtx.lineTo(w - margin.right, yy);
+                fftCtx.stroke();
+            }
+
+            fftCtx.fillStyle = "#7a1f1f";
+            for (let i = 0; i < currentFreqs.length; i++) {
+                const f = currentFreqs[i];
+                if (f > fmax) continue;
+
+                const mag = currentSpectrum[i];
+                const x = margin.left + (f / fmax) * (w - margin.left - margin.right);
+                const barW = Math.max(1.5, (w - margin.left - margin.right) / Math.max(24, Math.min(currentFreqs.length, 200)));
+                const y = margin.top + (1 - mag / maxMag) * (h - margin.top - margin.bottom);
+                const baseY = h - margin.bottom;
+
+                fftCtx.fillRect(x - barW / 2, y, barW, baseY - y);
+            }
+
+            if (currentPeak.freq <= fmax) {
+                const px = margin.left + (currentPeak.freq / fmax) * (w - margin.left - margin.right);
+                const py = margin.top + (1 - currentPeak.mag / maxMag) * (h - margin.top - margin.bottom);
+
+                fftCtx.strokeStyle = "#c28400";
+                fftCtx.lineWidth = 2;
+                fftCtx.beginPath();
+                fftCtx.moveTo(px, margin.top);
+                fftCtx.lineTo(px, h - margin.bottom);
+                fftCtx.stroke();
+
+                fftCtx.fillStyle = "#c28400";
+                fftCtx.beginPath();
+                fftCtx.arc(px, py, 5, 0, Math.PI * 2);
+                fftCtx.fill();
+
+                fftCtx.fillStyle = "#1f2937";
+                fftCtx.font = "bold 13px Arial";
+                fftCtx.textAlign = "left";
+                fftCtx.fillText(`Peak ${currentPeak.freq.toFixed(1)} Hz`, px + 8, py - 10);
+            }
+        }
+
+        function drawAll() {
+            drawSignalOverview();
+            drawTimeCanvas();
+            drawFFTCanvas();
+        }
+
+        function rerun() {
+            const fs = Math.max(64, parseInt(fsEl.value, 10) || 512);
+            fsEl.value = fs;
+            makeRandomSignal();
+        }
+
+        [fsEl, componentsEl, noiseEl, windowTypeEl].forEach(el => {
+            el.addEventListener("input", rerun);
+        });
+
+        fmaxEl.addEventListener("input", drawFFTCanvas);
+        newSignalBtn.addEventListener("click", rerun);
+
+        rerun();
+    </script>
+</body>
+
+</html>

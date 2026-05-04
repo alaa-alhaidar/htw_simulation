@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasenverschiebung – Interaktive Simulation</title>
+  <link rel="stylesheet" href="uni-style.css">
+  <style>
+    .compact-page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px 18px 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .compact-header .header-top {
+      padding: 16px 20px;
+    }
+
+    .compact-header .header-top h1 {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .compact-header .header-top p {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .compact-header .header-meta {
+      padding: 14px 18px;
+      gap: 10px;
+    }
+
+    .compact-header .meta-box {
+      padding: 10px 12px;
+    }
+
+    .top-grid,
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .page-nav-wrap {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .page-nav a {
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      transition: 0.18s ease;
+    }
+
+    .page-nav a:hover,
+    .page-nav a.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .formula-box {
+      margin-top: 14px;
+      padding: 18px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .formula-main {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 14px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 26px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .formula-small {
+      margin-top: 12px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .control-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .control-box {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 150px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .control-row label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .plot-wrap {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      min-height: 360px;
+      display: block;
+    }
+
+    .result-box {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .output-formula {
+      margin-top: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 22px;
+    }
+
+    table {
+      min-width: 520px;
+      font-size: 15px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    @media (max-width: 840px) {
+      .control-row {
+        grid-template-columns: 1fr;
+      }
+
+      canvas {
+        min-height: 300px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .compact-page {
+        padding: 12px 12px 18px;
+      }
+
+      .compact-header .header-top h1 {
+        font-size: 28px;
+      }
+
+      .formula-main {
+        font-size: 21px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="compact-page">
+    <header class="compact-header header">
+      <div class="header-top">
+        <h1>Phasenverschiebung – Interaktive Simulation</h1>
+        <p>
+          Visualisierung von bis zu drei Sinussignalen mit individueller Phasenverschiebung in einem
+          gemeinsamen Plot. Die Simulation zeigt, wie sich eine Phasenverschiebung auf den zeitlichen
+          Verlauf eines Sinussignals auswirkt.
+        </p>
+      </div>
+
+      <div class="header-meta">
+        <div class="meta-box">
+          <div class="label">Themengebiet</div>
+          <div class="value">Signale / Nachrichtentechnik</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Lernziel</div>
+          <div class="value">Einfluss der Phasenverschiebung auf Sinussignale verstehen</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Signaltyp</div>
+          <div class="value">Sinus, Amplitude A = 1 V, bis zu 3 Signale in einem Plot</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Interaktion</div>
+          <div class="value">Anzahl wählen, Phasen eingeben, Simulation starten</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-nav-wrap">
+      <nav class="page-nav" aria-label="Seitennavigation">
+        <a href="index.html">Startseite</a>
+        <a href="convul.html">Faltungsencoder</a>
+        <a href="crc-simu.html">CRC-Check</a>
+        <a href="modulation.html">Konstellation</a>
+        <a href="phase_modulation_input.html">BPSK</a>
+        <a href="phasenverschiebung.html" class="active">Phasenverschiebung</a>
+        <a href="smith.html">Smith</a>
+        <a href="winkel-rad.html">Winkel / Wellen</a>
+      </nav>
+    </div>
+
+    <section class="top-grid">
+      <div class="card">
+        <h2>Signalmodell und Formeln</h2>
+        <div class="formula-box">
+          <div class="formula-main">
+            s<sub>i</sub>(t) = 1 V · sin(2π f t + φ<sub>i</sub>)<br>
+            Δt<sub>i</sub> = φ<sub>i</sub> / (2π f)
+          </div>
+          <div class="formula-small">
+            Für die Gradangabe gilt: &nbsp; Δt = (φ / 360°) · T
+          </div>
+        </div>
+
+        <div class="small-note">
+          Die Phasenverschiebung φ verschiebt das Sinussignal entlang der Zeitachse.
+          Je nach Wahl der Phasenlage können mehrere Signale direkt im selben Diagramm
+          verglichen werden.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Steuerung</h2>
+        <div class="control-panel">
+          <div class="control-box">
+            <div class="control-row">
+              <label for="signalCount">Anzahl der Signale</label>
+              <select id="signalCount" onchange="updateVisibleInputs()">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+              </select>
+            </div>
+
+            <div class="control-row phase-row" data-signal="1">
+              <label for="phase1">Signal 1 – Phasenverschiebung φ₁ [°]</label>
+              <input type="number" id="phase1" value="0" step="1">
+            </div>
+
+            <div class="control-row phase-row" data-signal="2">
+              <label for="phase2">Signal 2 – Phasenverschiebung φ₂ [°]</label>
+              <input type="number" id="phase2" value="45" step="1">
+            </div>
+
+            <div class="control-row phase-row" data-signal="3">
+              <label for="phase3">Signal 3 – Phasenverschiebung φ₃ [°]</label>
+              <input type="number" id="phase3" value="90" step="1">
+            </div>
+
+            <div class="actions">
+              <button class="btn-primary" onclick="startSimulation()">Simulation starten</button>
+              <button class="btn-red" onclick="resetSimulation()">Reset</button>
+            </div>
+          </div>
+
+          <div class="small-note">
+            Es können ein bis drei Sinussignale gleichzeitig dargestellt werden. Die Amplitude bleibt immer A = 1 V. Jedes Signal besitzt ein eigenes Eingabefeld für die Phasenverschiebung.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <div class="card">
+        <h2>Gemeinsamer Plot</h2>
+        <div class="plot-wrap">
+          <canvas id="phaseCanvas" width="900" height="520"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Ausgabe</h2>
+        <div class="result-box">
+          <div><strong>Zeitbereich:</strong> 0 … 2π</div>
+          <div><strong>Referenzperiode:</strong> T</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Signal</th>
+                <th>Phasenverschiebung</th>
+                <th>Zeitverschiebung</th>
+              </tr>
+            </thead>
+            <tbody id="outputBody"></tbody>
+          </table>
+        </div>
+
+        <div class="output-formula">
+          Δt = (φ / 360°) · T
+        </div>
+
+        <div class="small-note">
+          Die Phasenverschiebung kann als Winkel φ oder als entsprechende Zeitverschiebung Δt
+          angegeben werden.
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">
+      Projekt von Alaa Al Haidar in Nachrichtentechnik htw 2026.
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('phaseCanvas');
+    const ctx = canvas.getContext('2d');
+    const colors = ['#0f4c81', '#e8751a', '#1f7a4c'];
+
+    function getSignalCount() {
+      return parseInt(document.getElementById('signalCount').value, 10);
+    }
+
+    function getPhases() {
+      return [1, 2, 3].map(i => {
+        const value = parseFloat(document.getElementById(`phase${i}`).value);
+        return Number.isFinite(value) ? value : 0;
+      });
+    }
+
+    function normalizePhase(deg) {
+      let value = deg % 360;
+      if (value < 0) value += 360;
+      return value;
+    }
+
+    function formatTimeShift(deg) {
+      const normalized = normalizePhase(deg);
+      if (normalized === 0) return '0';
+
+      const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+      const numerator = Math.round(normalized);
+      const divisor = gcd(numerator, 360);
+      const n = numerator / divisor;
+      const d = 360 / divisor;
+
+      if (n === 1) return `T/${d}`;
+      if (d === 1) return `${n}T`;
+      return `${n}T/${d}`;
+    }
+
+    function updateVisibleInputs() {
+      const count = getSignalCount();
+      document.querySelectorAll('.phase-row').forEach(row => {
+        const signalNumber = parseInt(row.dataset.signal, 10);
+        row.style.display = signalNumber <= count ? 'grid' : 'none';
+      });
+      startSimulation();
+    }
+
+    function resetSimulation() {
+      document.getElementById('signalCount').value = '3';
+      document.getElementById('phase1').value = 0;
+      document.getElementById('phase2').value = 45;
+      document.getElementById('phase3').value = 90;
+      updateVisibleInputs();
+    }
+
+    function drawGrid(plot) {
+      ctx.strokeStyle = '#d7dde7';
+      ctx.lineWidth = 1;
+      ctx.font = '14px Segoe UI, Arial';
+      ctx.fillStyle = '#5f6b7a';
+
+      for (let i = 0; i <= 8; i++) {
+        const y = plot.top + (plot.height / 8) * i;
+        ctx.beginPath();
+        ctx.moveTo(plot.left, y);
+        ctx.lineTo(plot.left + plot.width, y);
+        ctx.stroke();
+
+        const amp = (1 - i * 0.25).toFixed(2);
+        ctx.fillText(amp, 16, y + 5);
+      }
+
+      for (let i = 0; i <= 6; i++) {
+        const x = plot.left + (plot.width / 6) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, plot.top);
+        ctx.lineTo(x, plot.top + plot.height);
+        ctx.stroke();
+        ctx.fillText(i === 6 ? '2π' : String(i), x - 5, plot.top + plot.height + 24);
+      }
+
+      ctx.strokeStyle = '#1f2937';
+      ctx.lineWidth = 1.4;
+
+      // y-Achse: Start des Zeitbereichs direkt bei t = 0
+      ctx.beginPath();
+      ctx.moveTo(plot.left, plot.top);
+      ctx.lineTo(plot.left, plot.top + plot.height);
+      ctx.stroke();
+
+      // x-Achse bei Amplitude 0
+      ctx.beginPath();
+      ctx.moveTo(plot.left, plot.top + plot.height / 2);
+      ctx.lineTo(plot.left + plot.width, plot.top + plot.height / 2);
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(20, plot.top + plot.height / 2 + 35);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = '#1f2937';
+      ctx.fillText('Voltage U [V]', 0, 0);
+      ctx.restore();
+
+      ctx.fillStyle = '#1f2937';
+      ctx.fillText('Zeit t', plot.left + plot.width / 2 - 20, plot.top + plot.height + 50);
+    }
+
+    function drawSignal(plot, phaseDeg, color) {
+      const phaseRad = phaseDeg * Math.PI / 180;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+
+      for (let px = 0; px <= plot.width; px++) {
+        const t = (px / plot.width) * 2 * Math.PI;
+        const value = Math.sin(t + phaseRad);
+        const x = plot.left + px;
+        const y = plot.top + plot.height / 2 - value * (plot.height / 2);
+
+        if (px === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+
+      ctx.stroke();
+    }
+
+    function drawLegend(plot, phases, count) {
+      const legendY = plot.top + plot.height + 78;
+      let x = plot.left + 10;
+      ctx.font = '14px Segoe UI, Arial';
+
+      for (let i = 0; i < count; i++) {
+        ctx.strokeStyle = colors[i];
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x, legendY - 5);
+        ctx.lineTo(x + 28, legendY - 5);
+        ctx.stroke();
+
+        ctx.fillStyle = '#1f2937';
+        ctx.fillText(`Signal ${i + 1} (φ = ${phases[i]}°)`, x + 36, legendY);
+        x += 230;
+      }
+    }
+
+    function drawPlot() {
+      const count = getSignalCount();
+      const phases = getPhases();
+      const plot = { left: 72, top: 36, width: canvas.width - 112, height: 340 };
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawGrid(plot);
+
+      for (let i = 0; i < count; i++) {
+        drawSignal(plot, phases[i], colors[i]);
+      }
+
+      drawLegend(plot, phases, count);
+    }
+
+    function updateOutput() {
+      const count = getSignalCount();
+      const phases = getPhases();
+      const outputBody = document.getElementById('outputBody');
+      outputBody.innerHTML = '';
+
+      for (let i = 0; i < count; i++) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>Signal ${i + 1}</td>
+          <td>${phases[i]}°</td>
+          <td>${formatTimeShift(phases[i])}</td>
+        `;
+        outputBody.appendChild(tr);
+      }
+    }
+
+    function startSimulation() {
+      drawPlot();
+      updateOutput();
+    }
+
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+      input.addEventListener('input', startSimulation);
+    });
+
+    updateVisibleInputs();
+  </script>
+</body>
+</html>
